@@ -5,7 +5,7 @@ module.exports = {
         .setName('orb')
         .setDescription('Creates a squemorb.'),
     async execute(interaction) {
-        const orb = interaction.emojis.cache.get("894675406307885078");
-        return interaction.reply(`<${orb}>`);
+        const orb = interaction.client.emojis.cache.find(emoji => emoji.name === "squorbet");
+        return interaction.reply(`${orb}`);
     },
 };
