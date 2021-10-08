@@ -7,7 +7,5 @@ module.exports = {
             const orb = message.client.emojis.cache.find(emoji => emoji.name === "squorbet");
             message.react(`${orb}`);
         }
-
-        console.log(`Message from ${message.author.username}: ${message.content}`);
     },
 };
