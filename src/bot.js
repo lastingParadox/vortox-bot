@@ -18,5 +18,6 @@ const commandFolders = fs.readdirSync("./src/commands");
 	client.handleCommands(commandFolders, "./src/commands");
 	client.login(token);
 	client.dbLogin();
+	client.levelSetUp();
 
 })();
