@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
 module.exports = {
@@ -26,15 +27,26 @@ module.exports = {
         let jsonString = fs.readFileSync('./items/types.json');
         const types = JSON.parse(jsonString);
 
+        const embed = new MessageEmbed()
+            .setColor('#FFA500')
+            .setTitle(`Adding Weapon ${id}`)
+            .setDescription(`Successfully added \`${id}\` with damage roll \`${damage}\` to the weapon list!`)
+            .setTimestamp();
+
         if (types.find(e => e.id === type) === undefined) {
-            await interaction.reply(`Weapon type \`${type}\` doesn't exist!`);
+            embed.setColor('#FF0000');
+            embed.setTitle(`Adding Weapon ${id} Failed!`);
+            embed.setDescription(`Weapon type \`${type}\` doesn't exist!`);
+            await interaction.reply({ embeds: [embed] });
             return;
         };
 
         const temp = {
             "id": id,
+            "name": id,
             "type": type,
-            "damage": damage
+            "damage": damage,
+            "description": "Description Unavailable."
         };
 
         jsonString = fs.readFileSync('./items/weapons.json');
@@ -45,12 +57,15 @@ module.exports = {
         fs.writeFile('./items/weapons.json', JSON.stringify(weapons, null, 2), err => {
             if (err) {
                 console.log('Error writing to weapons.json.', err);
+                embed.setColor('#FF0000');
+                embed.setTitle(`Adding Weapon ${id} Failed!`);
+                embed.setDescription(`Failed to add \`${id}!\` (Check the console.)`);
             }
             else {
                 console.log("weapons.json successfully written to!");
             }
         });
 
-		await interaction.reply(`Successfully added \`${id}\` with damage roll \`${damage}\` to the weapon list!`);
+		await interaction.reply({ embeds: [embed] });
 	},
 };

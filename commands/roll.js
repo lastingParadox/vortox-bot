@@ -18,7 +18,7 @@ module.exports = {
         const roll = diceRoller.rollValue(dice);
 
         const embed = new MessageEmbed()
-            .setColor('#0099ff')
+            .setColor('#FFA500')
             .setTitle(`Rolling ${dice}`)
             .setDescription(`You rolled a \`${roll}\`!`)
             .setTimestamp();

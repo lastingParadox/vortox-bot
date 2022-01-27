@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, underscore } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 const { DiceRoller } = require('dice-roller-parser');
 const diceRoller = new DiceRoller();
@@ -21,24 +22,41 @@ module.exports = {
         const weaponslist = JSON.parse(weaponString);
         const typeslist = JSON.parse(typeString);
         
+        const embed = new MessageEmbed()
+            .setColor('#FFA500')
+            .setTitle(`Rolling for ${id} Damage`)
+            .setTimestamp();
+
         const weapon = weaponslist.find(e => e.id === id);
+
         if (weapon === undefined) {
-            await interaction.reply(`Weapon id \`${id}\` not found!`);
-            return
+            embed.setColor('#FF0000');
+            embed.setDescription(`Weapon id \`${id}\` not found!`);
+            await interaction.reply({ embeds: [embed] });
+            return;
         }
+
         const type = typeslist.find(e => e.id === weapon.type);
 
-        if (type === undefined)
-            await interaction.reply(`Weapon type \`${weapon.type}\` not found!`);
+        if (type === undefined) {
+            embed.setColor('#FF0000');
+            embed.setDescription(`Weapon type \`${weapon.type}\` not found!`);
+            await interaction.reply({ embeds: [embed] });
+        }
         else {
             const accuracy = Math.floor(Math.random() * 100) + 1;
+            const name = weapon.name.charAt(0).toUpperCase() + weapon.name.slice(1);
 
             if(accuracy <= type.missrate) {
-                await interaction.reply(`Rolling for ${id} accuracy...\nRolled a \`${accuracy}\`!\nThe attack misses!`);
+                embed.setTitle(`${name} Attack Missed!`);
+                embed.setDescription(`Rolling for ${name} accuracy...\nRolled a ${accuracy}!\nThe attack misses!`)
+                await interaction.reply({ embeds: [embed] });
             }
             else {
                 const damage = diceRoller.rollValue(weapon.damage);
-                await interaction.reply(`Rolling for ${id} accuracy...\nRolled a \`${accuracy}\`!\nThe attack hits for \`${damage}\` damage!`);
+                embed.setTitle(`${name} did \`${damage}\` Damage!`);
+                embed.setDescription(`Rolling for ${name} accuracy...\nRolled a ${accuracy} !\nThe attack hits for \`${damage}\` damage!`)
+                await interaction.reply({ embeds: [embed] });
             }
         }
 	},
