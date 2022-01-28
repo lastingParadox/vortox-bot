@@ -104,7 +104,7 @@ module.exports = {
 
             types[index][attribute] = edit;
 
-            fs.writeFile('./items/types.json', JSON.stringify(weapons, null, 2), err => {
+            fs.writeFile('./items/types.json', JSON.stringify(types, null, 2), err => {
                 if (err) {
                     console.log('Error writing to types.json.', err);
                     embed.setColor('#FF0000');

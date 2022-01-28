@@ -50,12 +50,14 @@ module.exports = {
             if(accuracy <= type.missrate) {
                 embed.setTitle(`${name} Attack Missed!`);
                 embed.setDescription(`Rolling for ${name} accuracy...\nRolled a ${accuracy}!\nThe attack misses!`)
+                embed.setColor('#E34234');
                 await interaction.reply({ embeds: [embed] });
             }
             else {
                 const damage = diceRoller.rollValue(weapon.damage);
                 embed.setTitle(`${name} did \`${damage}\` Damage!`);
-                embed.setDescription(`Rolling for ${name} accuracy...\nRolled a ${accuracy} !\nThe attack hits for \`${damage}\` damage!`)
+                embed.setDescription(`Rolling for ${name} accuracy...\nRolled a ${accuracy}!\nThe attack hits for \`${damage}\` damage!`)
+                embed.setColor('#50C878');
                 await interaction.reply({ embeds: [embed] });
             }
         }
