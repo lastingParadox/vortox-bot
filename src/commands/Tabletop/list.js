@@ -10,18 +10,19 @@ module.exports = {
             subcommand
                 .setName('weapons')
                 .setDescription('List weapons.')
-                .addStringOption(option =>
+                .addStringOption(option => {
                     option.setName('type')
                         .setDescription('The weapon type to list from.')
-                        .setRequired(false)
-                        .addChoice('rifle', 'rifle')
-                        .addChoice('smg', 'smg')
-                        .addChoice('marksman', 'marksman')
-                        .addChoice('shotgun', 'shotgun')
-                        .addChoice('pistol', 'pistol')
-                        .addChoice('lmg', 'lmg')
-                        .addChoice('explosive', 'explosive')
-                        .addChoice('melee', 'melee')))
+                        .setRequired(true)
+                        let choices;
+                        let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        choices = JSON.parse(readTypes);
+
+                        for (let type of choices) {
+                            option.addChoice(type.id, type.id);
+                        }
+                        return option
+                    }))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('types')
@@ -29,7 +30,7 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('characters')
-                .setDescription('List characters.')),
+                .setDescription('List all characters.')),
 
 	async execute(interaction) {
         if (interaction.options.getSubcommand() === 'weapons') {
@@ -39,7 +40,7 @@ module.exports = {
             const jsonString = fs.readFileSync(workingDir + `items\\weapons.json`);
             let weapons = JSON.parse(jsonString);
 
-            if(type != undefined) {
+            if(type !== undefined) {
                 weapons = weapons.filter(a => a.type === type);
             }
 
