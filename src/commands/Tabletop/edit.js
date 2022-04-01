@@ -17,7 +17,7 @@ module.exports = {
                         .setRequired(true))
                 .addStringOption(option => 
                     option.setName('attribute')
-                        .setDescription('The weapon\'s attribute to be edited.')
+                        .setDescription('The weapon\'s attribute to be edited. (id is 20 char MAX and name is 30 char MAX)')
                         .setRequired(true)
                         .addChoice('id', 'id')
                         .addChoice('name', 'name')
@@ -38,7 +38,7 @@ module.exports = {
                         .setRequired(true))
                 .addStringOption(option => 
                     option.setName('attribute')
-                        .setDescription('The weapon\'s attribute to be edited.')
+                        .setDescription('The weapon\'s attribute to be edited. (id is 20 char MAX)')
                         .setRequired(true)
                         .addChoice('id', 'id')
                         .addChoice('missrate', 'missrate'))
@@ -56,6 +56,21 @@ module.exports = {
         const id = interaction.options.getString('id');
         const attribute = interaction.options.getString('attribute');
         const edit = interaction.options.getString('edit');
+
+        if (attribute === 'id' && edit.length > 20) {
+            embed.setColor('#FF0000');
+            embed.setTitle(`Editing ${id} Failed!`);
+            embed.setDescription(`ID ${edit} is over 20 characters!`);
+            await interaction.reply({ embeds: [embed] });
+            return;
+        }
+        else if (attribute === 'name' && edit.length > 30) {
+            embed.setColor('#FF0000');
+            embed.setTitle(`Editing ${id} Failed!`);
+            embed.setDescription(`Name ${edit} is over 30 characters!`);
+            await interaction.reply({ embeds: [embed] });
+            return;
+        }
 
         if (interaction.options.getSubcommand() === 'weapon') {
 

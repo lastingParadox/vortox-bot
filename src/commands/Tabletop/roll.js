@@ -15,12 +15,20 @@ module.exports = {
 	async execute(interaction) {
         const dice = interaction.options.getString('dice');
 
-        const roll = diceRoller.rollValue(dice);
+		const embed = new MessageEmbed()
+			.setColor('#FFA500')
+			.setTitle(`Rolling ${dice}`);
 
-        const embed = new MessageEmbed()
-            .setColor('#FFA500')
-            .setTitle(`Rolling ${dice}`)
-            .setDescription(`You rolled a \`${roll}\`!`);
+        let roll
+
+		try {
+			roll = diceRoller.rollValue(dice)
+			embed.setDescription(`You rolled a \`${roll}\`!`);
+		}
+		catch (SyntaxError) {
+			embed.setColor('#FF0000')
+				 .setDescription(`Invalid dice format!`);
+		}
 
 		await interaction.reply({ embeds: [embed] });
 	},

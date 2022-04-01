@@ -15,12 +15,21 @@ module.exports = {
                 .setDescription('Adds a weapon to the list.')
                 .addStringOption(option =>
                     option.setName('id')
-                        .setDescription('The weapon\'s id to be used in commands.')
+                        .setDescription('The weapon\'s id to be used in commands. (20 char MAX)')
                         .setRequired(true))
-                .addStringOption(option =>
+                .addStringOption(option => {
                     option.setName('type')
                         .setDescription('The weapon\'s weapon type.')
-                        .setRequired(true))
+                        .setRequired(true)
+                        let choices;
+                        let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        choices = JSON.parse(readTypes);
+
+                        for (let type of choices) {
+                        option.addChoice(type.id, type.id);
+                        }
+                        return option;
+                        })
                 .addStringOption(option =>
                     option.setName('damage')
                         .setDescription('The weapon\'s damage roll.')
@@ -31,7 +40,7 @@ module.exports = {
                 .setDescription('Adds a weapon type to the list.')
                 .addStringOption(option =>
                     option.setName('id')
-                        .setDescription('The weapon type\'s id to be used in commands.')
+                        .setDescription('The weapon type\'s id to be used in commands. (20 char MAX)')
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('missrate')
@@ -43,7 +52,7 @@ module.exports = {
                 .setDescription('Adds a character to the list.')
                 .addStringOption(option =>
                     option.setName('id')
-                        .setDescription('The character\'s id to the used in commands.')
+                        .setDescription('The character\'s id to the used in commands. (20 char MAX)')
                         .setRequired(true))
                 .addStringOption(option =>
                     option.setName('hp')
@@ -57,6 +66,17 @@ module.exports = {
                 .setColor('#FFA500')
                 .setTimestamp();
 
+        let addType = interaction.options.getSubcommand();
+
+        if (id.length > 20) {
+            addType = addType.charAt(0).toUpperCase() + addType.substring(1);
+            embed.setColor('#FF0000');
+            embed.setTitle(`Adding ${addType} ${id} Failed!`);
+            embed.setDescription(`ID ${id} is over 20 characters!`);
+            await interaction.reply({ embeds: [embed] });
+            return;
+        }
+
         let jsonString = fs.readFileSync(workingDir + `items\\types.json`);
         const types = JSON.parse(jsonString);
 
@@ -66,7 +86,7 @@ module.exports = {
         jsonString = fs.readFileSync(workingDir + `items\\characters.json`);
         const characters = JSON.parse(jsonString);
 
-        if (interaction.options.getSubcommand() === 'weapon') {
+        if (addType === 'weapon') {
 
             const type = interaction.options.getString('type');
             const damage = interaction.options.getString('damage');
@@ -127,7 +147,7 @@ module.exports = {
             await interaction.reply({ embeds: [embed] });
         }
 
-        else if (interaction.options.getSubcommand() === 'type') {
+        else if (addType === 'type') {
             const missrate = interaction.options.getString('missrate');
 
             const temp = {
@@ -166,7 +186,7 @@ module.exports = {
             await interaction.reply({ embeds: [embed] });
         }
 
-        else if (interaction.options.getSubcommand() === 'character') {
+        else if (addType === 'character') {
             let hp = interaction.options.getString('hp');
             if (hp === undefined) {
                 hp = 30;

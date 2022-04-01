@@ -44,6 +44,7 @@ module.exports = {
             embed.setDescription(`Weapon type \`${weapon.type}\` not found!`);
             await interaction.reply({ embeds: [embed] });
         }
+
         else {
             const accuracy = Math.floor(Math.random() * 100) + 1;
             const name = weapon.name.charAt(0).toUpperCase() + weapon.name.slice(1);

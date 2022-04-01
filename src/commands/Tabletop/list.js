@@ -13,7 +13,7 @@ module.exports = {
                 .addStringOption(option => {
                     option.setName('type')
                         .setDescription('The weapon type to list from.')
-                        .setRequired(true)
+                        .setRequired(false)
                         let choices;
                         let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
                         choices = JSON.parse(readTypes);
@@ -35,30 +35,45 @@ module.exports = {
 	async execute(interaction) {
         if (interaction.options.getSubcommand() === 'weapons') {
 
-            const type = interaction.options.getString('type');
+            let type = interaction.options.getString('type');
 
             const jsonString = fs.readFileSync(workingDir + `items\\weapons.json`);
             let weapons = JSON.parse(jsonString);
+            let output;
 
-            if(type !== undefined) {
+            if(type !== null) {
                 weapons = weapons.filter(a => a.type === type);
+                output = `\`\`\`json\nList of All ${type.toUpperCase()} Weapons\n\n` + `id`.padEnd(20) + `| name`.padEnd(32) + `| type\n` + "-".repeat(70) + "\n";
+            }
+            else {
+                output = `\`\`\`json\nList of All Weapons\n\n` + `id`.padEnd(20) + `| name`.padEnd(32) + `| type\n` + "-".repeat(70) + "\n";
             }
 
-            let output = `\`\`\`json\nList of All ${type.toUpperCase()} Weapons\n\n` + `id`.padEnd(10) + `| name\n` + "-".repeat(30) + "\n";
-            weapons.forEach(element => output += (element.id).padEnd(10,' ') + '| ' + element.name + '\n')
-            output += `\`\`\``
+            weapons.forEach(element => output += (element.id).padEnd(20,' ') + '| ' + (element.name).padEnd(30, ' ') + '| ' + element.type + '\n');
+            output += `\`\`\``;
 
             await interaction.reply(output);
         }
 
-        else if (interaction.options.getSubcommand() === 'types' || interaction.options.getSubcommand() === 'characters') {
+        else if (interaction.options.getSubcommand() === 'types') {
 
             let jsonString = fs.readFileSync(workingDir + `items\\types.json`);
             const types = JSON.parse(jsonString);
 
-            let output = `\`\`\`json\nList of All Weapon Type Ids\n\n` + `id\n` + "-".repeat(15) + "\n";
-            types.forEach(element => output += (element.id).padEnd(10,' ') + '\n')
-            output += `\`\`\``
+            let output = `\`\`\`json\nList of All Weapon Type IDs\n\n` + `id\n` + "-".repeat(20) + "\n";
+            types.forEach(element => output += (element.id).padEnd(20,' ') + '\n');
+            output += `\`\`\``;
+
+            await interaction.reply(output);
+        }
+
+        else if (interaction.options.getSubcommand() === 'characters') {
+            let jsonString = fs.readFileSync(workingDir + `items\\characters.json`);
+            const characters = JSON.parse(jsonString);
+
+            let output = `\`\`\`json\nList of All Characters\n\n` + `id`.padEnd(20) + `| name\n` + "-".repeat(30) + "\n";
+            characters.forEach(element => output += (element.id).padEnd(20,' ') + '| ' + element.name + '\n');
+            output += `\`\`\``;
 
             await interaction.reply(output);
         }
