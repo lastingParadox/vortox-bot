@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs');
+const { workingDir } = require('../../config.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -31,12 +32,11 @@ module.exports = {
                 .setDescription('List characters.')),
 
 	async execute(interaction) {
-
         if (interaction.options.getSubcommand() === 'weapons') {
 
             const type = interaction.options.getString('type');
 
-            jsonString = fs.readFileSync('./items/weapons.json');
+            const jsonString = fs.readFileSync(workingDir + `items\\weapons.json`);
             let weapons = JSON.parse(jsonString);
 
             if(type != undefined) {
@@ -52,7 +52,7 @@ module.exports = {
 
         else if (interaction.options.getSubcommand() === 'types' || interaction.options.getSubcommand() === 'characters') {
 
-            let jsonString = fs.readFileSync('./items/types.json');
+            let jsonString = fs.readFileSync(workingDir + `items\\types.json`);
             const types = JSON.parse(jsonString);
 
             let output = `\`\`\`json\nList of All Weapon Type Ids\n\n` + `id\n` + "-".repeat(15) + "\n";

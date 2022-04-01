@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
+const { workingDir } = require('../../config.json');
 const { DiceRoller } = require('dice-roller-parser');
 const diceRoller = new DiceRoller();
 
@@ -16,8 +17,8 @@ module.exports = {
 	async execute(interaction) {
         const id = interaction.options.getString('id');
 
-        const weaponString = fs.readFileSync('./items/weapons.json');
-        const typeString = fs.readFileSync('./items/types.json');
+        const weaponString = fs.readFileSync(workingDir + `items\\weapons.json`);
+        const typeString = fs.readFileSync(workingDir + `items\\types.json`);
 
         const weaponslist = JSON.parse(weaponString);
         const typeslist = JSON.parse(typeString);

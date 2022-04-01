@@ -20,8 +20,7 @@ module.exports = {
         const embed = new MessageEmbed()
             .setColor('#FFA500')
             .setTitle(`Rolling ${dice}`)
-            .setDescription(`You rolled a \`${roll}\`!`)
-            .setTimestamp();
+            .setDescription(`You rolled a \`${roll}\`!`);
 
 		await interaction.reply({ embeds: [embed] });
 	},

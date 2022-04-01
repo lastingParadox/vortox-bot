@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
+const { workingDir } = require('../../config.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -58,7 +59,7 @@ module.exports = {
 
         if (interaction.options.getSubcommand() === 'weapon') {
 
-            const jsonString = fs.readFileSync('./items/weapons.json');
+            const jsonString = fs.readFileSync(workingDir + `items\\weapons.json`);
             const weapons = JSON.parse(jsonString);
 
             const index = weapons.findIndex(e => e.id === id);
@@ -72,7 +73,7 @@ module.exports = {
 
             weapons[index][attribute] = edit;
 
-            fs.writeFile('./items/weapons.json', JSON.stringify(weapons, null, 2), err => {
+            fs.writeFile(workingDir + `items\\weapons.json`, JSON.stringify(weapons, null, 2), err => {
                 if (err) {
                     console.log('Error writing to weapons.json.', err);
                     embed.setColor('#FF0000');
@@ -90,7 +91,7 @@ module.exports = {
 
         else if (interaction.options.getSubcommand() === 'type') {
 
-            const jsonString = fs.readFileSync('./items/types.json');
+            const jsonString = fs.readFileSync(workingDir + `items\\types.json`);
             const types = JSON.parse(jsonString);
 
             const index = types.findIndex(e => e.id === id);
@@ -104,7 +105,7 @@ module.exports = {
 
             types[index][attribute] = edit;
 
-            fs.writeFile('./items/types.json', JSON.stringify(types, null, 2), err => {
+            fs.writeFile(workingDir + `items\\types.json`, JSON.stringify(types, null, 2), err => {
                 if (err) {
                     console.log('Error writing to types.json.', err);
                     embed.setColor('#FF0000');
