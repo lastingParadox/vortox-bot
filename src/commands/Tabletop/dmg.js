@@ -40,9 +40,8 @@ module.exports = {
         const charlist = JSON.parse(charString);
         
         const embed = new MessageEmbed()
-            .setColor('#FFA500')
+            .setColor('#FF0000')
             .setTitle(`Rolling for ${id} Damage`)
-            .setTimestamp();
 
         if (id === undefined && characterid !== undefined) {
 
@@ -51,7 +50,6 @@ module.exports = {
         const weapon = weaponslist.find(e => e.id === id);
 
         if (weapon === undefined) {
-            embed.setColor('#FF0000');
             embed.setDescription(`Weapon id \`${id}\` not found!`);
             await interaction.reply({ embeds: [embed] });
             return;
@@ -60,7 +58,6 @@ module.exports = {
         const type = typeslist.find(e => e.id === weapon.type);
 
         if (type === undefined) {
-            embed.setColor('#FF0000');
             embed.setDescription(`Weapon type \`${weapon.type}\` not found!`);
             await interaction.reply({ embeds: [embed] });
             return;
@@ -82,7 +79,6 @@ module.exports = {
         if (characterid !== undefined || characterid !== null) {
             const charIndex = charlist.findIndex(e => e.id === characterid);
             if (charIndex === -1) {
-                embed.setColor('#FF0000');
                 embed.setDescription(`Character id \`${characterid}\` not found!`);
                 await interaction.reply({ embeds: [embed] });
                 return;
@@ -93,7 +89,6 @@ module.exports = {
                 fs.writeFile(workingDir + `items\\characters.json`, JSON.stringify(charlist, null, 2), async err => {
                     if (err) {
                         console.log('Error writing to character.json.', err);
-                        embed.setColor('#FF0000');
                         embed.setTitle(`Editing Character ${characterid} Failed!`);
                         embed.setDescription(`Failed to edit \`${characterid}!\` (Check the console.)`);
                         await interaction.reply({embeds: [embed]});
@@ -107,7 +102,7 @@ module.exports = {
                 embed.setDescription(`Rolling for ${name} accuracy...\n` +
                                      `Rolled a ${accuracy}!\n` +
                                      `The attack hits for \`${damage}\` damage!\n` +
-                                     `\`${charlist[charIndex]['name']}\` now has \`${charlist[charIndex]['hp']}\`` +
+                                     `\`${charlist[charIndex]['name']}\` now has \`${charlist[charIndex]['hp']}\` ` +
                                      `(out of \`${charlist[charIndex]['maxhp']}\`) hp!`);
                 embed.setColor('#50C878');
                 await interaction.reply({ embeds: [embed] });

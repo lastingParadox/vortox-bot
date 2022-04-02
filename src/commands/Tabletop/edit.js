@@ -1,4 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { DiceRoller } = require('dice-roller-parser');
+const roller = new DiceRoller();
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 const { workingDir } = require('../../config.json');
@@ -26,7 +28,7 @@ module.exports = {
                         .addChoice('description', 'description'))
                 .addStringOption(option =>
                     option.setName('edit')
-                        .setDescription('The change to be given to the attribute.')
+                        .setDescription('The change to be given to the weapon\'s attribute.')
                         .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
@@ -53,97 +55,99 @@ module.exports = {
                         .addChoice('missrate', 'missrate'))
                 .addStringOption(option =>
                     option.setName('edit')
-                        .setDescription('The change to be given to the attribute.')
-                        .setRequired(true))),
+                        .setDescription('The change to be given to the type\'s attribute.')
+                        .setRequired(true)))
+        .addSubcommand(subcommand =>
+                subcommand
+                    .setName('character')
+                    .setDescription('Edit a pre-existing character.')
+                    .addStringOption(option => {
+                        option.setName('id')
+                            .setDescription('The character\'s id to be edited.')
+                            .setRequired(true)
+                        let choices;
+                        let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
+                        choices = JSON.parse(readChars);
+
+                        for (let type of choices) {
+                            option.addChoice(type.id, type.id);
+                        }
+                        return option;
+                    })
+                    .addStringOption(option =>
+                        option.setName('attribute')
+                            .setDescription('The character\'s attribute to be edited. (id is 20 char MAX and name is 30 char MAX)')
+                            .setRequired(true)
+                            .addChoice('id', 'id')
+                            .addChoice('name', 'name')
+                            .addChoice('description', 'description')
+                            .addChoice('hp', 'hp')
+                            .addChoice('maxhp', 'maxhp')
+                            .addChoice('ff2', 'ff2')
+                            .addChoice('ff3', 'ff3')
+                            .addChoice('ff4', 'ff4')
+                            .addChoice('other', 'other'))
+                    .addStringOption(option =>
+                        option.setName('edit')
+                            .setDescription('The change to be given to the character\'s attribute.')
+                            .setRequired(true))),
 
 	async execute(interaction) {
-
-        const embed = new MessageEmbed()
-            .setColor('#FFA500')
-            .setTimestamp();
 
         const id = interaction.options.getString('id');
         const attribute = interaction.options.getString('attribute');
         const edit = interaction.options.getString('edit');
 
+        const embed = new MessageEmbed()
+            .setColor('#FF0000')
+            .setTitle(`Editing \`${id}\` Failed!`);
+
         if (attribute === 'id' && edit.length > 20) {
-            embed.setColor('#FF0000');
-            embed.setTitle(`Editing ${id} Failed!`);
-            embed.setDescription(`ID ${edit} is over 20 characters!`);
+            embed.setDescription(`ID \`${edit}\` is over 20 characters!`);
             await interaction.reply({ embeds: [embed] });
             return;
         }
         else if (attribute === 'name' && edit.length > 30) {
-            embed.setColor('#FF0000');
-            embed.setTitle(`Editing ${id} Failed!`);
-            embed.setDescription(`Name ${edit} is over 30 characters!`);
+            embed.setDescription(`Name \`${edit}\` is over 30 characters!`);
             await interaction.reply({ embeds: [embed] });
             return;
         }
 
-        if (interaction.options.getSubcommand() === 'weapon') {
-
-            const jsonString = fs.readFileSync(workingDir + `items\\weapons.json`);
-            const weapons = JSON.parse(jsonString);
-
-            const index = weapons.findIndex(e => e.id === id);
-
-            if (index === -1) {
-                embed.setColor('#FF0000');
-                embed.setDescription(`Weapon id \`${id}\` not found!`);
+        if (attribute === "damage") {
+            try {
+                roller.roll(edit)
+            } catch (err) {
+                embed.setDescription(`Damage \`${edit}\` is not in a proper dice format!`);
                 await interaction.reply({ embeds: [embed] });
                 return;
             }
-
-            weapons[index][attribute] = edit;
-
-            fs.writeFile(workingDir + `items\\weapons.json`, JSON.stringify(weapons, null, 2), err => {
-                if (err) {
-                    console.log('Error writing to weapons.json.', err);
-                    embed.setColor('#FF0000');
-                    embed.setTitle(`Editing Weapon ${id} Failed!`);
-                    embed.setDescription(`Failed to edit \`${id}!\` (Check the console.)`);
-                }
-                else {
-                    console.log("weapons.json successfully written to!");
-                }
-            });
-
-            embed.setTitle(`Editing ${id} Succeeded!`);
-            embed.setDescription(`Successfully changed \`${id}\`'s \`${attribute}\` to \`${edit}\`!`)
         }
 
-        else if (interaction.options.getSubcommand() === 'type') {
+        const fileString = interaction.options.getSubcommand() + `s.json`;
+        const list = JSON.parse( fs.readFileSync(workingDir + `items\\` + fileString) );
+        const object = list.find(e => e.id === id);
 
-            const jsonString = fs.readFileSync(workingDir + `items\\types.json`);
-            const types = JSON.parse(jsonString);
+        if (object === undefined) {
+            embed.setDescription(interaction.options.getSubcommand().charAt(0).toUpperCase() + interaction.options.getSubcommand().slice(1) + ` ID \`${id}\` not found!`);
+            await interaction.reply({ embeds: [embed] });
+            return;
+        }
 
-            const index = types.findIndex(e => e.id === id);
+        object[attribute] = edit;
 
-            if (index === -1) {
-                embed.setColor('#FF0000');
-                embed.setDescription(`Weapon id \`${id}\` not found!`);
-                await interaction.reply({ embeds: [embed] });
-                return;
+        fs.writeFile(workingDir + `items\\` + fileString, JSON.stringify(list, null, 2), err => {
+            if (err) {
+                console.log(`Error writing to ${fileString}`, err);
+                embed.setDescription(`Failed to edit \`${id}!\` (Check the console.)`);
             }
+            else {
+                console.log(`${fileString} successfully written to!`);
+            }
+        });
 
-            types[index][attribute] = edit;
-
-            fs.writeFile(workingDir + `items\\types.json`, JSON.stringify(types, null, 2), err => {
-                if (err) {
-                    console.log('Error writing to types.json.', err);
-                    embed.setColor('#FF0000');
-                    embed.setTitle(`Editing Type ${id} Failed!`);
-                    embed.setDescription(`Failed to edit \`${id}!\` (Check the console.)`);
-                }
-                else {
-                    console.log("types.json successfully written to!");
-                }
-            });
-
-            embed.setTitle(`Editing ${id} Succeeded!`);
-            embed.setDescription(`Successfully changed \`${id}\`'s \`${attribute}\` to \`${edit}\`!`)
-        }
+        embed.setColor('#FFA500')
+             .setTitle(`Editing \`${id}\` Succeeded!`)
+             .setDescription(`Successfully changed \`${id}\`'s \`${attribute}\` to \`${edit}\``);
 
 		await interaction.reply({ embeds: [embed] });
 	},
