@@ -32,13 +32,22 @@ module.exports = {
             subcommand
                 .setName('type')
                 .setDescription('Edit a pre-existing weapon type.')
-                .addStringOption(option => 
+                .addStringOption(option => {
                     option.setName('id')
                         .setDescription('The weapon type\'s id to be edited.')
-                        .setRequired(true))
+                        .setRequired(true)
+                        let choices;
+                        let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        choices = JSON.parse(readTypes);
+
+                        for (let type of choices) {
+                            option.addChoice(type.id, type.id);
+                        }
+                        return option;
+                        })
                 .addStringOption(option => 
                     option.setName('attribute')
-                        .setDescription('The weapon\'s attribute to be edited. (id is 20 char MAX)')
+                        .setDescription('The weapon type\'s attribute to be edited. (id is 20 char MAX)')
                         .setRequired(true)
                         .addChoice('id', 'id')
                         .addChoice('missrate', 'missrate'))

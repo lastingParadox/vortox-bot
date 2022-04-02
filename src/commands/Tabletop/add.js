@@ -192,7 +192,7 @@ module.exports = {
                 hp = 30;
             }
 
-            const character = {"id":id, "name": id, "description": "Description Unavailable.", "hp": hp, "ff2": false, "ff3": false, "ff4": false, "other": false, "quotes":{"ff2": [], "ff3": [], "ff4": [], "other": []}}
+            const character = {"id":id, "name": id, "description": "Description Unavailable.", "hp": hp, "maxhp": hp, "ff2": false, "ff3": false, "ff4": false, "other": false, "quotes":{"ff2": [], "ff3": [], "ff4": [], "other": []}}
 
             if (characters.find(e => e.id === id.toLowerCase()) !== undefined) {
                 embed.setColor('#FF0000');
