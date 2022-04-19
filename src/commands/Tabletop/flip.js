@@ -7,6 +7,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('flip')
         .setDescription('Flips a coin!'),
+    category: "Tabletop",
 
     async execute(interaction) {
 

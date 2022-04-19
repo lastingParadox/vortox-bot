@@ -3,8 +3,7 @@ const { DiceRoller } = require('dice-roller-parser');
 const roller = new DiceRoller();
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
-const { workingDir } = require('../../config.json');
-
+const { workingDir} = require('../../config.json');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('add')
@@ -21,13 +20,13 @@ module.exports = {
                     option.setName('type')
                         .setDescription('The weapon\'s weapon type.')
                         .setRequired(true)
-                        let choices;
-                        let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
-                        choices = JSON.parse(readTypes);
+                        //let choices;
+                        //let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        //choices = JSON.parse(readTypes);
 
-                        for (let type of choices) {
-                        option.addChoice(type.id, type.id);
-                        }
+                        //for (let type of choices) {
+                        //option.addChoice(type.id, type.id);
+                        //}
                         return option;
                         })
                 .addStringOption(option =>
@@ -57,156 +56,95 @@ module.exports = {
                 .addIntegerOption(option =>
                     option.setName('hp')
                         .setDescription('The character\'s hp, between 1 and 50.'))),
+    category: "Tabletop",
 
 	async execute(interaction) {
 
-        const id = interaction.options.getString('id');
-
-        const embed = new MessageEmbed()
-                .setColor('#FF0000');
+        const id = interaction.options.getString('id').toLowerCase();
 
         let addType = interaction.options.getSubcommand();
+        addType = addType.charAt(0).toUpperCase() + addType.substring(1);
+
+        const embed = new MessageEmbed()
+                .setColor('#FF0000')
+                .setTitle(`Adding ${addType} ${id} Failed!`);
 
         if (id.length > 20) {
-            addType = addType.charAt(0).toUpperCase() + addType.substring(1);
-            embed.setTitle(`Adding ${addType} ${id} Failed!`);
             embed.setDescription(`ID ${id} is over 20 characters!`);
             await interaction.reply({ embeds: [embed] });
             return;
         }
 
-        let jsonString = fs.readFileSync(workingDir + `items\\types.json`);
-        const types = JSON.parse(jsonString);
+        let jsonString = fs.readFileSync(workingDir + `items\\${addType}s.json`);
+        const objects = JSON.parse(jsonString);
+        let temp;
 
-        jsonString = fs.readFileSync(workingDir + `items\\weapons.json`);
-        const weapons = JSON.parse(jsonString);
-
-        jsonString = fs.readFileSync(workingDir + `items\\characters.json`);
-        const characters = JSON.parse(jsonString);
-
-        if (addType === 'weapon') {
-
+        if (addType === 'Weapon') {
             const type = interaction.options.getString('type');
             const damage = interaction.options.getString('damage');
 
             try {
-                roller.roll(damage)
+                roller.roll(damage);
             } catch (err) {
-                embed.setTitle(`Adding Weapon ${id} Failed!`);
                 embed.setDescription(`Damage \`${damage}\` is not in a proper dice format!`);
                 await interaction.reply({ embeds: [embed] });
                 return;
             }
 
-            if (weapons.find(e => e.id === id) !== undefined) {
-                embed.setTitle(`Adding Weapon ${id} Failed!`);
-                embed.setDescription(`Weapon id \`${id}\` already exists!\nTry the \`edit\` command!`);
-                await interaction.reply({ embeds: [embed] });
-                return;
-            }
+            temp = {"id": id, "name": id, "type": type, "damage": damage, "description": "Description Unavailable."};
 
-            const temp = {
-                "id": id,
-                "name": id,
-                "type": type,
-                "damage": damage,
-                "description": "Description Unavailable."
-            };
-
-            weapons.push(temp);
-
-            fs.writeFile(workingDir + `items\\weapons.json`, JSON.stringify(weapons, null, 2), err => {
-                if (err) {
-                    console.log('Error writing to weapons.json.', err);
-                    embed.setTitle(`Adding Weapon ${id} Failed!`);
-                    embed.setDescription(`Failed to add \`${id}!\` (Check the console.)`);
-                    interaction.reply({ embeds: [embed] });
-
-                }
-                else {
-                    console.log("weapons.json successfully written to!");
-                }
-            });
-
-            embed.setTitle(`Adding Weapon ${id} Succeeded!`);
             embed.setDescription(`Successfully added \`${id}\` with damage roll \`${damage}\` to the weapon list!`);
 
-            await interaction.reply({ embeds: [embed] });
         }
 
-        else if (addType === 'type') {
+        else if (addType === 'Type') {
             const missrate = interaction.options.getString('missrate');
 
-            const temp = {
-                "id": id,
-                "missrate": missrate
-            };
+            temp = {"id": id, "missrate": missrate};
 
-            if (types.find(e => e.id === id) !== undefined) {
-                embed.setTitle(`Adding Weapon Type ${id} Failed!`);
-                embed.setDescription(`Weapon type id \`${id}\` already exists!\nTry the \`edit\` command!`);
-                await interaction.reply({ embeds: [embed] });
-                return;
-            }
-
-            types.push(temp);
-
-            fs.writeFile(workingDir + `items\\types.json`, JSON.stringify(types, null, 2), err => {
-                if (err) {
-                    console.log('Error writing to types.json.', err);
-                    embed.setTitle(`Adding Weapon Type ${id} Failed!`);
-                    embed.setDescription(`Failed to add \`${id}!\` (Check the console.)`);
-                    interaction.reply({ embeds: [embed] });
-
-                }
-                else {
-                    console.log("types.json successfully written to!");
-                }
-
-            });
-
-            embed.setTitle(`Adding Weapon Type ${id} Succeeded!`);
             embed.setDescription(`Successfully added \`${id}\` with miss rate \`${missrate}%\` to the weapon types list!`);
-
-            await interaction.reply({ embeds: [embed] });
         }
 
-        else if (addType === 'character') {
+        else if (addType === 'Character') {
             let hp = interaction.options.getInteger('hp');
-            if (hp === undefined) {
+            if (hp === null) {
                 hp = 30;
             }
 
-            const character = {"id":id, "name": (id.charAt(0).toUpperCase() + id.slice(1)), "description": "Description Unavailable.", "hp": hp, "maxhp": hp, "ff2": false, "ff3": false, "ff4": false, "other": false, "quotes":{"ff2": [], "ff3": [], "ff4": [], "other": []}}
+            temp = {"id": id, "name": (id.charAt(0).toUpperCase() + id.slice(1)), "description": "Description Unavailable.", "hp": hp, "maxhp": hp, "ff2": false, "ff3": false, "ff4": false, "other": false, "quotes":{"ff2": [], "ff3": [], "ff4": [], "other": []}}
 
-            if (characters.find(e => e.id === id.toLowerCase()) !== undefined) {
-                embed.setTitle(`Adding Character ${id} Failed!`);
-                embed.setDescription(`Character \`${id}\` already exists!\nTry the \`edit\` command!`);
-                await interaction.reply({ embeds: [embed] });
+            embed.setDescription(`Successfully added \`${id}\` with \`${hp}\` hp to the characters list!`);
+        }
+
+        if (objects.find(e => e.id === id) !== undefined) {
+            embed.setTitle(`Adding ${addType} ${id} Failed!`);
+            embed.setDescription(`${addType} ID \`${id}\` already exists!\nTry the \`edit\` command!`);
+            await interaction.reply({ embeds: [embed] });
+            return;
+        }
+
+        objects.push(temp);
+
+        fs.writeFile(workingDir + `items\\${addType}s.json`, JSON.stringify(objects, null, 2), err => {
+            if (err) {
+                console.log(`Error writing to ${addType.toLowerCase()}s.json.`, err);
+                embed.setTitle(`Adding ${id} Failed!`);
+                embed.setDescription(`Failed to add \`${id}!\` (Check the console.)`);
+                interaction.reply({ embeds: [embed] });
                 return;
             }
+            else {
+                console.log(`${addType.toLowerCase()}s.json successfully written to!`);
+            }
+        });
 
-            characters.push(character);
+        embed.setColor('#FFA500');
+        embed.setTitle(`Adding ${id} Succeeded!`);
+        await (async () => {
+            interaction.reply({ embeds: [embed] });
+            interaction.client.destroy();
+            interaction
+        });
 
-            fs.writeFile(workingDir + `items\\characters.json`, JSON.stringify(characters, null, 2), err => {
-                if (err) {
-                    console.log('Error writing to characters.json.', err);
-                    embed.setTitle(`Adding Character ${id} Failed!`);
-                    embed.setDescription(`Failed to add \`${id}!\` (Check the console.)`);
-                    interaction.reply({ embeds: [embed] });
-
-                }
-                else {
-                    console.log("characters.json successfully written to!");
-                }
-
-            });
-
-            embed.setColor('#FFA500');
-            embed.setTitle(`Adding Character ${id} Succeeded!`);
-            embed.setDescription(`Successfully added \`${id}\` with \`${hp}\` hp to the characters list!`);
-
-            await interaction.reply({ embeds: [embed] });
-        }
 	},
 };

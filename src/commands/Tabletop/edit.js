@@ -38,13 +38,13 @@ module.exports = {
                     option.setName('id')
                         .setDescription('The weapon type\'s id to be edited.')
                         .setRequired(true)
-                        let choices;
-                        let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
-                        choices = JSON.parse(readTypes);
+                        //let choices;
+                        //let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        //choices = JSON.parse(readTypes);
 
-                        for (let type of choices) {
-                            option.addChoice(type.id, type.id);
-                        }
+                        //for (let type of choices) {
+                        //    option.addChoice(type.id, type.id);
+                        //}
                         return option;
                         })
                 .addStringOption(option => 
@@ -91,6 +91,7 @@ module.exports = {
                         option.setName('edit')
                             .setDescription('The change to be given to the character\'s attribute.')
                             .setRequired(true))),
+    category: "Tabletop",
 
 	async execute(interaction) {
 

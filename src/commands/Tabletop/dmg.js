@@ -17,15 +17,16 @@ module.exports = {
             option.setName('character')
                 .setDescription('The character to be damaged.')
                 .setRequired(false)
-                let choices;
-                let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
-                choices = JSON.parse(readChars);
+                //let choices;
+                //let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
+                //choices = JSON.parse(readChars);
 
-                for (let type of choices) {
-                    option.addChoice(type.id, type.id);
-                }
+                //for (let type of choices) {
+                //    option.addChoice(type.id, type.id);
+                //}
                 return option;
                 }),
+    category: "Tabletop",
 
 	async execute(interaction) {
         const id = interaction.options.getString('id');
@@ -42,10 +43,6 @@ module.exports = {
         const embed = new MessageEmbed()
             .setColor('#FF0000')
             .setTitle(`Rolling for ${id} Damage`)
-
-        if (id === undefined && characterid !== undefined) {
-
-        }
 
         const weapon = weaponslist.find(e => e.id === id);
 
@@ -76,15 +73,15 @@ module.exports = {
 
         const damage = diceRoller.rollValue(weapon.damage);
 
-        if (characterid !== undefined || characterid !== null) {
-            const charIndex = charlist.findIndex(e => e.id === characterid);
-            if (charIndex === -1) {
+        if (characterid !== null) {
+            const character = charlist.find(e => e.id === characterid);
+            if (character === undefined) {
                 embed.setDescription(`Character id \`${characterid}\` not found!`);
                 await interaction.reply({ embeds: [embed] });
                 return;
             }
             else {
-                charlist[charIndex]['hp'] -= damage;
+                character.hp -= damage;
 
                 fs.writeFile(workingDir + `items\\characters.json`, JSON.stringify(charlist, null, 2), async err => {
                     if (err) {
@@ -98,12 +95,12 @@ module.exports = {
                     }
                 });
 
-                embed.setTitle(`${name} did \`${damage}\` Damage to \`${charlist[charIndex]['name']}\`!`);
+                embed.setTitle(`${name} did \`${damage}\` Damage to \`${character.name}\`!`);
                 embed.setDescription(`Rolling for ${name} accuracy...\n` +
                                      `Rolled a ${accuracy}!\n` +
                                      `The attack hits for \`${damage}\` damage!\n` +
-                                     `\`${charlist[charIndex]['name']}\` now has \`${charlist[charIndex]['hp']}\` ` +
-                                     `(out of \`${charlist[charIndex]['maxhp']}\`) hp!`);
+                                     `\`${character.name}\` now has \`${character.hp}\` ` +
+                                     `(out of \`${character.maxhp}\`) hp!`);
                 embed.setColor('#50C878');
                 await interaction.reply({ embeds: [embed] });
                 return;

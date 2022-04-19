@@ -11,7 +11,7 @@ module.exports = (client) => {
             for (const file of commandFiles) {
                 const command = require(`../commands/${folder}/${file}`);
 
-                client.commands.set(command.data.name, command);
+                await client.commands.set(command.data.name, command);
                 client.commandArray.push(command.data.toJSON());
             }
         }
@@ -31,7 +31,7 @@ module.exports = (client) => {
             } catch (error) {
                 console.error(error);
             }
-        })();
+        });
 
 
     }

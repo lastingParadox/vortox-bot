@@ -11,6 +11,7 @@ module.exports = {
             option.setName('dice')
                 .setDescription('The dice to be rolled. Uses standard DnD dice roll formatting.')
                 .setRequired(true)),
+	category: "Tabletop",
 
 	async execute(interaction) {
         const dice = interaction.options.getString('dice');
@@ -30,6 +31,7 @@ module.exports = {
 				 .setDescription(`Invalid dice format!`);
 		}
 
+		const command = require(`./add.js`);
 		await interaction.reply({ embeds: [embed] });
 	},
 };

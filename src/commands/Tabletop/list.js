@@ -14,13 +14,13 @@ module.exports = {
                     option.setName('type')
                         .setDescription('The weapon type to list from.')
                         .setRequired(false)
-                        let choices;
-                        let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
-                        choices = JSON.parse(readTypes);
+                        //let choices;
+                        //let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        //choices = JSON.parse(readTypes);
 
-                        for (let type of choices) {
-                            option.addChoice(type.id, type.id);
-                        }
+                        //for (let type of choices) {
+                        //    option.addChoice(type.id, type.id);
+                        //}
                         return option
                     }))
         .addSubcommand(subcommand =>
@@ -31,6 +31,7 @@ module.exports = {
             subcommand
                 .setName('characters')
                 .setDescription('List all characters.')),
+    category: "Tabletop",
 
 	async execute(interaction) {
         if (interaction.options.getSubcommand() === 'weapons') {

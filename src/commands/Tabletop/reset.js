@@ -11,16 +11,17 @@ module.exports = {
             option.setName('id')
                 .setDescription('The id of the character to be reset. (Or \'all\')')
                 .setRequired(true)
-            let choices;
-            let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
-            choices = JSON.parse(readChars);
+            //let choices;
+            //let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
+            //choices = JSON.parse(readChars);
 
-            for (let type of choices) {
-                option.addChoice(type.id, type.id);
-            }
-            option.addChoice('all', 'all');
+            //for (let type of choices) {
+            //    option.addChoice(type.id, type.id);
+            //}
+            //option.addChoice('all', 'all');
             return option;
         }),
+    category: "Tabletop",
 
     async execute(interaction) {
         const id = interaction.options.getString('id');
