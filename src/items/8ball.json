@@ -1,1 +1,10 @@
-[]
+[
+    {
+        "answer": "yes",
+        "responses": ["It is certain."]
+    },
+    {
+        "answer": "no",
+        "responses": ["Don't count on it."]
+    }
+]
