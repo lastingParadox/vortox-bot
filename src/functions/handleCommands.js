@@ -11,14 +11,13 @@ module.exports = (client) => {
             for (const file of commandFiles) {
                 const command = require(`../commands/${folder}/${file}`);
 
-                await client.commands.set(command.data.name, command);
+                client.commands.set(command.data.name, command);
                 client.commandArray.push(command.data.toJSON());
             }
         }
 
         const rest = new REST({ version: '9' }).setToken(token);
 
-        await (async () => {
             try {
                 console.log('Started refreshing application (/) commands.');
 
@@ -28,11 +27,10 @@ module.exports = (client) => {
                 );
 
                 console.log('Successfully reloaded application (/) commands.');
-            } catch (error) {
+            }
+            catch (error) {
                 console.error(error);
             }
-        });
-
 
     }
 }

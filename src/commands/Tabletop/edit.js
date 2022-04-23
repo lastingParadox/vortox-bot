@@ -83,15 +83,12 @@ module.exports = {
                             .addChoice('description', 'description')
                             .addChoice('hp', 'hp')
                             .addChoice('maxhp', 'maxhp')
-                            .addChoice('ff2', 'ff2')
-                            .addChoice('ff3', 'ff3')
-                            .addChoice('ff4', 'ff4')
-                            .addChoice('other', 'other'))
+                            .addChoice('image', 'image')
+                            .addChoice('color', 'color'))
                     .addStringOption(option =>
                         option.setName('edit')
                             .setDescription('The change to be given to the character\'s attribute.')
                             .setRequired(true))),
-    category: "Tabletop",
 
 	async execute(interaction) {
 

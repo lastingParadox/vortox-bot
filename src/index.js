@@ -1,7 +1,7 @@
 const { Client, Intents, Collection } = require('discord.js');
 const { token } = require('./config.json');
 const fs = require('fs');
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_VOICE_STATES] });
 
 client.commands = new Collection();
 
@@ -30,4 +30,28 @@ const commandFolders = fs.readdirSync("./commands");
 
 	//Logging in the bot to the Discord service
 	await client.login(token);
+
+	const list = [
+		"orbin' it up",
+		"Project 4 soon!",
+		"Garrick, more like garlic",
+		"marbilization",
+		"An onion, wow.",
+		"No one out-zizzas the Butt.",
+		"the world is your oyster!",
+		"always. kid. to me.",
+		"i'm all ears.",
+		"u-uh... you're a star!",
+		"plot interference",
+		"your balls"
+	]
+
+	let index = Math.floor(Math.random() * list.length);
+	client.user.setActivity(list[index], {type: 'PLAYING'});
+
+	setInterval(() => {
+		index = Math.floor(Math.random() * list.length);
+		client.user.setActivity(list[index], {type: 'PLAYING'});
+	}, 300000);
+
 })();

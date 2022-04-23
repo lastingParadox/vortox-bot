@@ -56,7 +56,6 @@ module.exports = {
                 .addIntegerOption(option =>
                     option.setName('hp')
                         .setDescription('The character\'s hp, between 1 and 50.'))),
-    category: "Tabletop",
 
 	async execute(interaction) {
 
@@ -111,7 +110,7 @@ module.exports = {
                 hp = 30;
             }
 
-            temp = {"id": id, "name": (id.charAt(0).toUpperCase() + id.slice(1)), "description": "Description Unavailable.", "hp": hp, "maxhp": hp, "ff2": false, "ff3": false, "ff4": false, "other": false, "quotes":{"ff2": [], "ff3": [], "ff4": [], "other": []}}
+            temp = {"id": id, "name": (id.charAt(0).toUpperCase() + id.slice(1)), "description": "Description Unavailable.", "hp": hp, "maxhp": hp, "image": "", "color": "#FFA500", "quotes":{"ff2": [], "ff3": [], "ff4": [], "other": []}}
 
             embed.setDescription(`Successfully added \`${id}\` with \`${hp}\` hp to the characters list!`);
         }
@@ -140,11 +139,8 @@ module.exports = {
 
         embed.setColor('#FFA500');
         embed.setTitle(`Adding ${id} Succeeded!`);
-        await (async () => {
-            interaction.reply({ embeds: [embed] });
-            interaction.client.destroy();
-            interaction
-        });
+
+        await interaction.reply({ embeds: [embed] });
 
 	},
 };
