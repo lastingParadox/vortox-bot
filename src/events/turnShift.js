@@ -17,7 +17,7 @@ module.exports = {
 
                 user.turn = false;
 
-                episodeList['users'][(episodeList.users.findIndex(user) + 1) % episodeList.users.length]['turn'] = true;
+                episodeList['users'][(episodeList.users.findIndex(element => element === user) + 1) % episodeList.users.length]['turn'] = true;
 
                 fs.writeFile(workingDir + `items\\episodes.json`, JSON.stringify(episodeList, null, 2), err => {
                     if (err) {
