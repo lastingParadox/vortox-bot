@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
-const { workingDir } = require('../../config.json');
 const fs = require('fs');
 
 module.exports = {
@@ -12,7 +11,7 @@ module.exports = {
                 .setDescription('The id of the character to be reset. (Or \'all\')')
                 .setRequired(true)
             //let choices;
-            //let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
+            //let readChars = fs.readFileSync(process.cwd() + `\\items\\characters.json`);
             //choices = JSON.parse(readChars);
 
             //for (let type of choices) {
@@ -26,7 +25,7 @@ module.exports = {
     async execute(interaction) {
         const id = interaction.options.getString('id');
 
-        const charlist = JSON.parse( fs.readFileSync(workingDir + `items\\characters.json`) );
+        const charlist = JSON.parse( fs.readFileSync(process.cwd() + `\\items\\characters.json`) );
 
         const embed = new MessageEmbed()
             .setColor('#FF0000')
@@ -53,7 +52,7 @@ module.exports = {
 
         embed.setColor('#FFA500');
 
-        fs.writeFile(workingDir + `items\\characters.json`, JSON.stringify(charlist, null, 2), async err => {
+        fs.writeFile(process.cwd() + `\\items\\characters.json`, JSON.stringify(charlist, null, 2), async err => {
             if (err) {
                 console.log('Error writing to character.json.', err);
                 embed.setTitle(`Resetting Failed!`);

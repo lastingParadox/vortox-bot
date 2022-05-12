@@ -1,5 +1,4 @@
 const fs = require("fs");
-const {workingDir} = require("../config.json");
 
 module.exports = {
     name: 'interactionCreate',
@@ -10,7 +9,7 @@ module.exports = {
         if (!command) return;
 
         if(command.data.name === "8ball") {
-            const episodeList = JSON.parse(fs.readFileSync(workingDir + `items\\episodes.json`));
+            const episodeList = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`));
             const user = episodeList.users.find(x => x.id === interaction.member.id);
 
             if (interaction.channel.id === episodeList.episodeThread && user.turn === true && episodeList.users.length > 1) {
@@ -19,13 +18,10 @@ module.exports = {
 
                 episodeList['users'][(episodeList.users.findIndex(element => element === user) + 1) % episodeList.users.length]['turn'] = true;
 
-                fs.writeFile(workingDir + `items\\episodes.json`, JSON.stringify(episodeList, null, 2), err => {
+                fs.writeFile(process.cwd() + `\\items\\episodes.json`, JSON.stringify(episodeList, null, 2), err => {
                     if (err) {
                         console.log(`Error writing to episodes.json.`, err);
                         return;
-                    }
-                    else {
-                        console.log(`episodes.json successfully written to!`);
                     }
                 });
             }

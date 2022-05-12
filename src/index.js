@@ -1,5 +1,6 @@
+require('dotenv').config();
+
 const { Client, Intents, Collection } = require('discord.js');
-const { token, workingDir} = require('./config.json');
 const fs = require('fs');
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_VOICE_STATES] });
 
@@ -18,18 +19,9 @@ const commandFolders = fs.readdirSync("./commands");
 	client.handleCommands(commandFolders, "./commands");
 
 	//Getting the bot src directory.
-    const config = JSON.parse(fs.readFileSync(process.cwd() + `\\config.json`));
-
-	config.workingDir = process.cwd() + `\\`;
-
-	fs.writeFile(process.cwd() + `\\config.json`, JSON.stringify(config, null, 2), err => {
-		if (err) {
-			console.log('Error writing to config.json.', err);
-		}
-	});
 
 	//Logging in the bot to the Discord service
-	await client.login(token);
+	await client.login(process.env.CLIENT_TOKEN);
 
 	const list = [
 		"orbin' it up",
@@ -47,8 +39,7 @@ const commandFolders = fs.readdirSync("./commands");
 	]
 
 	let index = Math.floor(Math.random() * list.length);
-	const episodeList = JSON.parse(fs.readFileSync(workingDir + `items\\episodes.json`));
-
+	const episodeList = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`));
 
 	if (episodeList.episodeThread === "") client.user.setActivity(list[index], {type: 'WATCHING'});
 	else client.user.setActivity("Final Frontier", {type: 'PLAYING'});

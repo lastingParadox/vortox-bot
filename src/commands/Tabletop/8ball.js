@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
-const { workingDir } = require('../../config.json');
 const fs = require('fs');
 
 module.exports = {
@@ -15,7 +14,7 @@ module.exports = {
 	async execute(interaction) {
         const question = interaction.options.getString('question');
 
-        let ball = fs.readFileSync(workingDir + `items\\8ball.json`);
+        let ball = fs.readFileSync(process.cwd() + `\\items\\8ball.json`);
         const responses = JSON.parse(ball);
 
         const choice = Math.floor(Math.random() * responses.length);

@@ -3,7 +3,6 @@ const { DiceRoller } = require('dice-roller-parser');
 const roller = new DiceRoller();
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
-const { workingDir } = require('../../config.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -39,7 +38,7 @@ module.exports = {
                         .setDescription('The weapon type\'s id to be edited.')
                         .setRequired(true)
                         //let choices;
-                        //let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        //let readTypes = fs.readFileSync(process.cwd() + `\\items\\types.json`);
                         //choices = JSON.parse(readTypes);
 
                         //for (let type of choices) {
@@ -66,7 +65,7 @@ module.exports = {
                             .setDescription('The character\'s id to be edited.')
                             .setRequired(true)
                         let choices;
-                        let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
+                        let readChars = fs.readFileSync(process.cwd() + `\\items\\characters.json`);
                         choices = JSON.parse(readChars);
 
                         for (let type of choices) {
@@ -122,7 +121,7 @@ module.exports = {
         }
 
         const fileString = interaction.options.getSubcommand() + `s.json`;
-        const list = JSON.parse( fs.readFileSync(workingDir + `items\\` + fileString) );
+        const list = JSON.parse( fs.readFileSync(process.cwd() + `\\items\\` + fileString) );
         const object = list.find(e => e.id === id);
 
         if (object === undefined) {
@@ -133,7 +132,7 @@ module.exports = {
 
         object[attribute] = edit;
 
-        fs.writeFile(workingDir + `items\\` + fileString, JSON.stringify(list, null, 2), err => {
+        fs.writeFile(process.cwd() + `\\items\\` + fileString, JSON.stringify(list, null, 2), err => {
             if (err) {
                 console.log(`Error writing to ${fileString}`, err);
                 embed.setDescription(`Failed to edit \`${id}!\` (Check the console.)`);

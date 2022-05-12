@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
-const { workingDir } = require('../../config.json');
 const fs = require('fs');
 
 module.exports = {
@@ -19,7 +18,7 @@ module.exports = {
             .setColor('#FF0000')
             .setTitle(`\`${id}\` Quote`);
 
-        let charList = JSON.parse( fs.readFileSync(workingDir + `items\\characters.json`) );
+        let charList = JSON.parse( fs.readFileSync(process.cwd() + `\\items\\characters.json`) );
 
         while(id === null) {
             let rand = Math.floor(Math.random() * charList.length);

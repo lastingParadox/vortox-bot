@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs');
-const { workingDir } = require('../../config.json');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -15,7 +14,7 @@ module.exports = {
                         .setDescription('The weapon type to list from.')
                         .setRequired(false)
                         //let choices;
-                        //let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        //let readTypes = fs.readFileSync(process.cwd() + `\\items\\types.json`);
                         //choices = JSON.parse(readTypes);
 
                         //for (let type of choices) {
@@ -38,7 +37,7 @@ module.exports = {
 
             let type = interaction.options.getString('type');
 
-            const jsonString = fs.readFileSync(workingDir + `items\\weapons.json`);
+            const jsonString = fs.readFileSync(process.cwd() + `\\items\\weapons.json`);
             let weapons = JSON.parse(jsonString);
             let output;
 
@@ -58,7 +57,7 @@ module.exports = {
 
         else if (interaction.options.getSubcommand() === 'types') {
 
-            let jsonString = fs.readFileSync(workingDir + `items\\types.json`);
+            let jsonString = fs.readFileSync(process.cwd() + `\\items\\types.json`);
             const types = JSON.parse(jsonString);
 
             let output = `\`\`\`json\nList of All Weapon Type IDs\n\n` + `id\n` + "-".repeat(20) + "\n";
@@ -69,7 +68,7 @@ module.exports = {
         }
 
         else if (interaction.options.getSubcommand() === 'characters') {
-            let jsonString = fs.readFileSync(workingDir + `items\\characters.json`);
+            let jsonString = fs.readFileSync(process.cwd() + `\\items\\characters.json`);
             const characters = JSON.parse(jsonString);
 
             let output = `\`\`\`json\nList of All Characters\n\n` + `id`.padEnd(20) + `| name\n` + "-".repeat(30) + "\n";

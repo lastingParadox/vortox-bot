@@ -3,7 +3,6 @@ const { DiceRoller } = require('dice-roller-parser');
 const roller = new DiceRoller();
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
-const { workingDir} = require('../../config.json');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('add')
@@ -21,7 +20,7 @@ module.exports = {
                         .setDescription('The weapon\'s weapon type.')
                         .setRequired(true)
                         //let choices;
-                        //let readTypes = fs.readFileSync(workingDir + `items\\types.json`);
+                        //let readTypes = fs.readFileSync(process.cwd() + `\\items\\types.json`);
                         //choices = JSON.parse(readTypes);
 
                         //for (let type of choices) {
@@ -74,7 +73,7 @@ module.exports = {
             return;
         }
 
-        let jsonString = fs.readFileSync(workingDir + `items\\${addType}s.json`);
+        let jsonString = fs.readFileSync(process.cwd() + `\\items\\${addType}s.json`);
         const objects = JSON.parse(jsonString);
         let temp;
 
@@ -124,7 +123,7 @@ module.exports = {
 
         objects.push(temp);
 
-        fs.writeFile(workingDir + `items\\${addType}s.json`, JSON.stringify(objects, null, 2), err => {
+        fs.writeFile(process.cwd() + `\\items\\${addType}s.json`, JSON.stringify(objects, null, 2), err => {
             if (err) {
                 console.log(`Error writing to ${addType.toLowerCase()}s.json.`, err);
                 embed.setTitle(`Adding ${id} Failed!`);

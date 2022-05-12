@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
-const { workingDir } = require('../../config.json');
 const fs = require('fs');
 
 function msToTime(duration) {
@@ -42,7 +41,7 @@ module.exports = {
 
         const embed = new MessageEmbed()
             .setColor('#FF0000')
-        const episodeList = JSON.parse(fs.readFileSync(workingDir + `items\\episodes.json`));
+        const episodeList = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`));
 
         let thread = "";
         if (episodeList.episodeThread !== "") {
@@ -119,7 +118,7 @@ module.exports = {
                  .setDescription(`It's <@${user.id}>'s turn to 8ball!`);
         }
 
-        fs.writeFile(workingDir + `items\\episodes.json`, JSON.stringify(episodeList, null, 2), err => {
+        fs.writeFile(process.cwd() + `\\items\\episodes.json`, JSON.stringify(episodeList, null, 2), err => {
             if (err) {
                 console.log(`Error writing to episodes.json.`, err);
                 embed.setTitle(`Writing to Episode Failed!`);

@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
-const { workingDir } = require('../../config.json');
 const { DiceRoller } = require('dice-roller-parser');
 const diceRoller = new DiceRoller();
 
@@ -32,9 +31,9 @@ module.exports = {
         const id = interaction.options.getString('id');
         const characterid = interaction.options.getString('character');
 
-        const weaponString = fs.readFileSync(workingDir + `items\\weapons.json`);
-        const typeString = fs.readFileSync(workingDir + `items\\types.json`);
-        const charString = fs.readFileSync(workingDir + `items\\characters.json`);
+        const weaponString = fs.readFileSync(process.cwd() + `\\items\\weapons.json`);
+        const typeString = fs.readFileSync(process.cwd() + `\\items\\types.json`);
+        const charString = fs.readFileSync(process.cwd() + `\\items\\characters.json`);
 
         const weaponslist = JSON.parse(weaponString);
         const typeslist = JSON.parse(typeString);
@@ -83,7 +82,7 @@ module.exports = {
             else {
                 character.hp -= damage;
 
-                fs.writeFile(workingDir + `items\\characters.json`, JSON.stringify(charlist, null, 2), async err => {
+                fs.writeFile(process.cwd() + `\\items\\characters.json`, JSON.stringify(charlist, null, 2), async err => {
                     if (err) {
                         console.log('Error writing to character.json.', err);
                         embed.setTitle(`Editing Character ${characterid} Failed!`);
