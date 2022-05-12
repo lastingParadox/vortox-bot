@@ -1,5 +1,5 @@
 const { Client, Intents, Collection } = require('discord.js');
-const { token } = require('./config.json');
+const { token, workingDir} = require('./config.json');
 const fs = require('fs');
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_VOICE_STATES] });
 
@@ -47,11 +47,16 @@ const commandFolders = fs.readdirSync("./commands");
 	]
 
 	let index = Math.floor(Math.random() * list.length);
-	client.user.setActivity(list[index], {type: 'PLAYING'});
+	const episodeList = JSON.parse(fs.readFileSync(workingDir + `items\\episodes.json`));
+
+
+	if (episodeList.episodeThread === "") client.user.setActivity(list[index], {type: 'WATCHING'});
+	else client.user.setActivity("Final Frontier", {type: 'PLAYING'});
 
 	setInterval(() => {
 		index = Math.floor(Math.random() * list.length);
-		client.user.setActivity(list[index], {type: 'PLAYING'});
+		if (episodeList.episodeThread === "") client.user.setActivity(list[index], {type: 'WATCHING'});
+		else client.user.setActivity("Final Frontier", {type: 'PLAYING'});
 	}, 300000);
 
 })();

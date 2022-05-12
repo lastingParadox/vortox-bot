@@ -44,7 +44,7 @@ module.exports = {
             .setColor('#FF0000')
             .setTitle(`Rolling for ${id} Damage`)
 
-        const weapon = weaponslist.find(e => e.id === id);
+        const weapon = weaponslist.find(e => e.id === id.toLowerCase());
 
         if (weapon === undefined) {
             embed.setDescription(`Weapon id \`${id}\` not found!`);
@@ -74,7 +74,7 @@ module.exports = {
         const damage = diceRoller.rollValue(weapon.damage);
 
         if (characterid !== null) {
-            const character = charlist.find(e => e.id === characterid);
+            const character = charlist.find(e => e.id === characterid.toLowerCase());
             if (character === undefined) {
                 embed.setDescription(`Character id \`${characterid}\` not found!`);
                 await interaction.reply({ embeds: [embed] });

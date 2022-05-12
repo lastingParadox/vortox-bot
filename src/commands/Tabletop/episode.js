@@ -74,7 +74,17 @@ module.exports = {
                 thread.members.add(member.id);
             })
 
+            episodeList.users.sort(function(a, b) {
+                const nameA = a.name.toLowerCase();
+                const nameB = b.name.toLowerCase();
+
+                if (nameA < nameB) return -1;
+                if (nameA > nameB) return 1;
+                return 0;
+            })
             episodeList.users[0]["turn"] = true;
+
+            interaction.client.user.setActivity("Final Frontier", {type: 'PLAYING'});
 
             episodeList.episodeThread = thread.id;
             embed.setTitle(`Starting New Episode`)
@@ -90,12 +100,16 @@ module.exports = {
                 return;
             }
 
+            thread.send("Ending episode!");
+
             episodeList.episodeThread = "";
             episodeList.users = [];
             episodeList.episodes.push({ name: thread.name, messageCount: thread.messages.cache.size, episodeLength: msToTime(thread.lastMessage.createdAt - thread.createdAt) });
 
-            embed.setTitle(`Stopping Episode ${episodeList.episodeCount}`)
-                .setDescription(`Ended Episode ${episodeList.episodeCount}`);
+            interaction.client.user.setActivity("Space Rulebook", {type: 'WATCHING'});
+
+            embed.setTitle(`Stopping Episode`)
+                .setDescription(`Ended Episode ${thread.name}`);
         }
 
         else if (interaction.options.getSubcommand() === "turn") {
