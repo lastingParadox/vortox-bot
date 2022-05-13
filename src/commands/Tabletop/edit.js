@@ -2,7 +2,6 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { DiceRoller } = require('dice-roller-parser');
 const roller = new DiceRoller();
 const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
 
 const mongoose = require("mongoose");
 const { characterSchema } = require('../../models/characters')
@@ -11,7 +10,7 @@ const { typeSchema } = require('../../models/types')
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('editdb')
+        .setName('edit')
         .setDescription('Adds a weapon to the list.')
         .addSubcommand(subcommand =>
             subcommand
@@ -38,19 +37,10 @@ module.exports = {
             subcommand
                 .setName('type')
                 .setDescription('Edit a pre-existing weapon type.')
-                .addStringOption(option => {
+                .addStringOption(option =>
                     option.setName('id')
                         .setDescription('The weapon type\'s id to be edited.')
-                        .setRequired(true)
-                    //let choices;
-                    //let readTypes = fs.readFileSync(process.cwd() + `\\items\\types.json`);
-                    //choices = JSON.parse(readTypes);
-
-                    //for (let type of choices) {
-                    //    option.addChoice(type.id, type.id);
-                    //}
-                    return option;
-                })
+                        .setRequired(true))
                 .addStringOption(option =>
                     option.setName('attribute')
                         .setDescription('The weapon type\'s attribute to be edited. (id is 20 char MAX)')

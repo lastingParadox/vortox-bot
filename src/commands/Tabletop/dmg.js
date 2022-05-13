@@ -1,113 +1,115 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
 const { DiceRoller } = require('dice-roller-parser');
 const diceRoller = new DiceRoller();
+
+const mongoose = require("mongoose");
+const { characterSchema } = require('../../models/characters')
+const { weaponSchema } = require('../../models/weapons')
+const { typeSchema } = require('../../models/types')
+
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('dmg')
 		.setDescription('Rolls for the damage of a weapon.')
         .addStringOption(option =>
-            option.setName('id')
+            option.setName('weaponid')
                 .setDescription('The weapon\'s id.')
-                .setRequired(true))
-        .addStringOption(option => {
-            option.setName('character')
+                .setRequired(false))
+        .addStringOption(option =>
+            option.setName('characterid')
                 .setDescription('The character to be damaged.')
-                .setRequired(false)
-                //let choices;
-                //let readChars = fs.readFileSync(workingDir + `items\\characters.json`);
-                //choices = JSON.parse(readChars);
-
-                //for (let type of choices) {
-                //    option.addChoice(type.id, type.id);
-                //}
-                return option;
-                }),
+                .setRequired(false))
+        .addStringOption(option =>
+            option.setName('roll')
+                .setDescription('The amount of damage to deal if a weapon isn\'t used.')
+                .setRequired(false)),
     category: "Tabletop",
 
 	async execute(interaction) {
-        const id = interaction.options.getString('id');
-        const characterid = interaction.options.getString('character');
+        const weaponId = interaction.options.getString('weaponid');
+        const characterId = interaction.options.getString('characterid');
+        const roll = interaction.options.getString('roll')
 
-        const weaponString = fs.readFileSync(process.cwd() + `\\items\\weapons.json`);
-        const typeString = fs.readFileSync(process.cwd() + `\\items\\types.json`);
-        const charString = fs.readFileSync(process.cwd() + `\\items\\characters.json`);
+        const Character = mongoose.model('Character', characterSchema);
+        const Weapon = mongoose.model('Weapon', weaponSchema);
 
-        const weaponslist = JSON.parse(weaponString);
-        const typeslist = JSON.parse(typeString);
-        const charlist = JSON.parse(charString);
-        
+        const character = await Character.findOne({ id: characterId })
+        const weapon = await Weapon.findOne({ id: weaponId })
+
         const embed = new MessageEmbed()
             .setColor('#FF0000')
-            .setTitle(`Rolling for ${id} Damage`)
+            .setTitle(`Rolling for ${weaponId} Damage`)
 
-        const weapon = weaponslist.find(e => e.id === id.toLowerCase());
-
-        if (weapon === undefined) {
-            embed.setDescription(`Weapon id \`${id}\` not found!`);
+        if ((character === null && characterId !== null) || (weapon === null && weaponId !== null)) {
+            embed.setTitle(`ID Does Not Exist!`)
+                 .setDescription("Please provide a valid weapon and or character ID.")
             await interaction.reply({ embeds: [embed] });
             return;
         }
 
-        const type = typeslist.find(e => e.id === weapon.type);
+        if (weaponId !== null) {
 
-        if (type === undefined) {
-            embed.setDescription(`Weapon type \`${weapon.type}\` not found!`);
-            await interaction.reply({ embeds: [embed] });
-            return;
-        }
+            const Type = mongoose.model('Type', typeSchema);
+            const type = await Type.findOne({ id: weapon.type })
 
-        const accuracy = Math.floor(Math.random() * 100) + 1;
-        const name = weapon.name.charAt(0).toUpperCase() + weapon.name.slice(1);
+            const accuracy = Math.floor(Math.random() * 100) + 1;
 
-        if(accuracy <= type.missrate) {
-            embed.setTitle(`${name} Attack Missed!`);
-            embed.setDescription(`Rolling for ${name} accuracy...\nRolled a ${accuracy}!\nThe attack misses!`)
-            embed.setColor('#E34234');
-            await interaction.reply({ embeds: [embed] });
-            return;
-        }
-
-        const damage = diceRoller.rollValue(weapon.damage);
-
-        if (characterid !== null) {
-            const character = charlist.find(e => e.id === characterid.toLowerCase());
-            if (character === undefined) {
-                embed.setDescription(`Character id \`${characterid}\` not found!`);
+            if(accuracy <= type.missRate) {
+                embed.setTitle(`${weapon.name} Attack Missed!`);
+                embed.setDescription(`Rolling for ${weapon.name} accuracy...\nRolled a ${accuracy}!\nThe attack misses!`)
+                embed.setColor('#E34234');
                 await interaction.reply({ embeds: [embed] });
                 return;
             }
-            else {
+
+            const damage = diceRoller.rollValue(weapon.damage);
+
+            embed.setTitle(`${weapon.name} did \`${weapon.damage}\` Damage!`);
+            embed.setDescription(`Rolling for ${weapon.name} accuracy...\nRolled a ${accuracy}!\nThe attack hits for \`${damage}\` damage!`)
+
+            if (characterId !== null) {
+
                 character.hp -= damage;
 
-                fs.writeFile(process.cwd() + `\\items\\characters.json`, JSON.stringify(charlist, null, 2), async err => {
-                    if (err) {
-                        console.log('Error writing to character.json.', err);
-                        embed.setTitle(`Editing Character ${characterid} Failed!`);
-                        embed.setDescription(`Failed to edit \`${characterid}!\` (Check the console.)`);
-                        await interaction.reply({embeds: [embed]});
-                        return;
-                    } else {
-                        console.log("characters.json successfully written to!");
-                    }
-                });
+                embed.setTitle(`${weapon.name} did \`${damage}\` Damage to \`${character.name}\`!`);
+                embed.setDescription(`Rolling for ${weapon.name} accuracy...\n` +
+                    `Rolled a ${accuracy}!\n` +
+                    `The attack hits for \`${damage}\` damage!\n` +
+                    `${character.name} now has \`(${character.hp}/${character.maxHp})\` hp.`);
 
-                embed.setTitle(`${name} did \`${damage}\` Damage to \`${character.name}\`!`);
-                embed.setDescription(`Rolling for ${name} accuracy...\n` +
-                                     `Rolled a ${accuracy}!\n` +
-                                     `The attack hits for \`${damage}\` damage!\n` +
-                                     `\`${character.name}\` now has \`${character.hp}\` ` +
-                                     `(out of \`${character.maxhp}\`) hp!`);
-                embed.setColor('#50C878');
+                character.save();
+            }
+
+        }
+        else if (characterId !== null && roll !== null) {
+            let damage;
+
+            try {
+                damage = diceRoller.rollValue(roll)
+            }
+            catch (SyntaxError) {
+                embed.setDescription(`Invalid dice format!`);
                 await interaction.reply({ embeds: [embed] });
                 return;
             }
+
+            character.hp -= damage;
+
+            embed.setTitle(`Damage to \`${character.name}\`!`);
+            embed.setDescription(`${character.name} is hit for \`${damage}\` damage!\n` +
+                `${character.name} now has \`(${character.hp}/${character.maxHp})\` hp.`);
+
+            character.save();
+        }
+        else {
+            embed.setTitle("Unable to Roll Damage!")
+                 .setDescription("Please include one of the following combinations:\n-A weaponID\n-A weaponID and a characterID\n-A characterID and a roll value")
+            await interaction.reply({ embeds: [embed] });
+            return;
         }
 
-        embed.setTitle(`${name} did \`${damage}\` Damage!`);
-        embed.setDescription(`Rolling for ${name} accuracy...\nRolled a ${accuracy}!\nThe attack hits for \`${damage}\` damage!`)
         embed.setColor('#50C878');
         await interaction.reply({ embeds: [embed] });
 	},

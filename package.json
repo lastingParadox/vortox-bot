@@ -16,6 +16,8 @@
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.1",
+    "mongodb": "^4.6.0",
+    "mongoose": "^6.3.3",
     "node-fetch": "^2.6.7"
   },
   "devDependencies": {

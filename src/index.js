@@ -1,8 +1,9 @@
 require('dotenv').config();
 
 const { Client, Intents, Collection } = require('discord.js');
-const fs = require('fs');
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_VOICE_STATES] });
+const fs = require('fs');
+const mongoose = require('mongoose')
 
 client.commands = new Collection();
 
@@ -18,8 +19,8 @@ const commandFolders = fs.readdirSync("./commands");
 	client.handleEvents(eventFiles, "./events");
 	client.handleCommands(commandFolders, "./commands");
 
-	//Getting the bot src directory.
-
+	//Logging in the bot to the mongoDB service
+	await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 	//Logging in the bot to the Discord service
 	await client.login(process.env.CLIENT_TOKEN);
 

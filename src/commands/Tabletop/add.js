@@ -1,8 +1,12 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { DiceRoller } = require('dice-roller-parser');
-const roller = new DiceRoller();
 const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
+
+const mongoose = require("mongoose");
+const { characterSchema } = require('../../models/characters')
+const { weaponSchema } = require('../../models/weapons')
+const { typeSchema } = require('../../models/types')
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('add')
@@ -15,19 +19,10 @@ module.exports = {
                     option.setName('id')
                         .setDescription('The weapon\'s id to be used in commands. (20 char MAX)')
                         .setRequired(true))
-                .addStringOption(option => {
+                .addStringOption(option =>
                     option.setName('type')
                         .setDescription('The weapon\'s weapon type.')
-                        .setRequired(true)
-                        //let choices;
-                        //let readTypes = fs.readFileSync(process.cwd() + `\\items\\types.json`);
-                        //choices = JSON.parse(readTypes);
-
-                        //for (let type of choices) {
-                        //option.addChoice(type.id, type.id);
-                        //}
-                        return option;
-                        })
+                        .setRequired(true))
                 .addStringOption(option =>
                     option.setName('damage')
                         .setDescription('The weapon\'s damage roll.')
@@ -65,7 +60,7 @@ module.exports = {
 
         const embed = new MessageEmbed()
                 .setColor('#FF0000')
-                .setTitle(`Adding ${addType} ${id} Failed!`);
+                .setTitle(`Adding ${addType} \`${id}\` Failed!`);
 
         if (id.length > 20) {
             embed.setDescription(`ID ${id} is over 20 characters!`);
@@ -73,13 +68,10 @@ module.exports = {
             return;
         }
 
-        let jsonString = fs.readFileSync(process.cwd() + `\\items\\${addType}s.json`);
-        const objects = JSON.parse(jsonString);
-        let temp;
-
         if (addType === 'Weapon') {
             const type = interaction.options.getString('type');
             const damage = interaction.options.getString('damage');
+            const roller = new DiceRoller();
 
             try {
                 roller.roll(damage);
@@ -89,7 +81,18 @@ module.exports = {
                 return;
             }
 
-            temp = {"id": id, "name": id, "type": type, "damage": damage, "description": "Description Unavailable."};
+            const Weapon = mongoose.model('Weapon', weaponSchema);
+            const newWeapon = new Weapon({ id: id, name: (id.charAt(0).toUpperCase() + id.slice(1)), type: type, damage: damage, description: "Use `/edit weapon` to change this!" })
+
+            try {
+                await newWeapon.save();
+                console.log("Saved!");
+            } catch (err) {
+                console.log(err);
+                embed.setDescription("Weapon ID needs to be unique!");
+                await interaction.reply({ embeds: [embed] });
+                return;
+            }
 
             embed.setDescription(`Successfully added \`${id}\` with damage roll \`${damage}\` to the weapon list!`);
 
@@ -98,7 +101,19 @@ module.exports = {
         else if (addType === 'Type') {
             const missrate = interaction.options.getString('missrate');
 
-            temp = {"id": id, "missrate": missrate};
+            const Type = mongoose.model('Type', typeSchema);
+            const newType = new Type({ id: id, missRate: missrate });
+
+            try {
+                await newType.save();
+                console.log("Saved!");
+            } catch (err) {
+                console.log(err);
+                if (err.name === "MongoServerError") embed.setDescription("Type ID needs to be unique!");
+                else embed.setDescription("Miss rate needs to be between 0 and 100!");
+                await interaction.reply({ embeds: [embed] });
+                return;
+            }
 
             embed.setDescription(`Successfully added \`${id}\` with miss rate \`${missrate}%\` to the weapon types list!`);
         }
@@ -109,32 +124,21 @@ module.exports = {
                 hp = 30;
             }
 
-            temp = {"id": id, "name": (id.charAt(0).toUpperCase() + id.slice(1)), "description": "Description Unavailable.", "hp": hp, "maxhp": hp, "image": "", "color": "#FFA500", "quotes":{"ff2": [], "ff3": [], "ff4": [], "other": []}}
+            const Character = mongoose.model('Character', characterSchema);
+            const newCharacter = new Character({ id: id, name: (id.charAt(0).toUpperCase() + id.slice(1)), description: "Use `/edit character` to change this!", hp: hp, maxHp: hp, image: "", color: "#FFA500" });
+
+            try {
+                await newCharacter.save();
+                console.log("Saved!");
+            } catch (err) {
+                console.log(err);
+                embed.setDescription("Character ID needs to be unique!");
+                await interaction.reply({ embeds: [embed] });
+                return;
+            }
 
             embed.setDescription(`Successfully added \`${id}\` with \`${hp}\` hp to the characters list!`);
         }
-
-        if (objects.find(e => e.id === id) !== undefined) {
-            embed.setTitle(`Adding ${addType} ${id} Failed!`);
-            embed.setDescription(`${addType} ID \`${id}\` already exists!\nTry the \`edit\` command!`);
-            await interaction.reply({ embeds: [embed] });
-            return;
-        }
-
-        objects.push(temp);
-
-        fs.writeFile(process.cwd() + `\\items\\${addType}s.json`, JSON.stringify(objects, null, 2), err => {
-            if (err) {
-                console.log(`Error writing to ${addType.toLowerCase()}s.json.`, err);
-                embed.setTitle(`Adding ${id} Failed!`);
-                embed.setDescription(`Failed to add \`${id}!\` (Check the console.)`);
-                interaction.reply({ embeds: [embed] });
-                return;
-            }
-            else {
-                console.log(`${addType.toLowerCase()}s.json successfully written to!`);
-            }
-        });
 
         embed.setColor('#FFA500');
         embed.setTitle(`Adding ${id} Succeeded!`);

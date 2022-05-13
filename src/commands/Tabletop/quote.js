@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
-const fs = require('fs');
+const mongoose = require('mongoose');
+const { characterSchema } = require('../../models/characters')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,54 +15,51 @@ module.exports = {
     async execute(interaction) {
         let id = interaction.options.getString('id');
 
+        if (id !== null) id = id.toLowerCase();
+
+        const Character = mongoose.model('Character', characterSchema);
+        let speaker, quote, location, image, color;
+
         const embed = new MessageEmbed()
             .setColor('#FF0000')
             .setTitle(`\`${id}\` Quote`);
 
-        let charList = JSON.parse( fs.readFileSync(process.cwd() + `\\items\\characters.json`) );
+        if (id === null) {
+            let findSpeaker = 0;
 
-        while(id === null) {
-            let rand = Math.floor(Math.random() * charList.length);
-            if (charList[rand]['quotes']['ff2'].length !== 0 || charList[rand]['quotes']['ff3'].length !== 0 || charList[rand]['quotes']['ff4'].length !== 0 || charList[rand]['quotes']['other'].length !== 0)
-                id = charList[rand]['id'];
+            await Character.find().then(characters => {
+
+                while(findSpeaker === 0) {
+                    findSpeaker = characters[Math.floor(Math.random() * characters.length)];
+                    if (findSpeaker.quotes.length === 0) findSpeaker = 0;
+                }
+
+                const randomQuote = findSpeaker.quotes[Math.floor(Math.random() * findSpeaker.quotes.length)];
+                speaker = findSpeaker.name;
+                quote = randomQuote.quote;
+                location = randomQuote.location
+                image = findSpeaker.image;
+                color = findSpeaker.color;
+            })
+        }
+        else {
+            await Character.find({id: id}).then(character => {
+                const randomQuote = character[0].quotes[Math.floor(Math.random() * character[0].quotes.length)];
+                speaker = character[0].name;
+                quote = randomQuote.quote;
+                location = randomQuote.location;
+                image = character[0].image;
+                color = character[0].color;
+            })
         }
 
-        id = id.toLowerCase();
+        console.log(speaker + " said " + quote + " in " + location);
 
-        const character = charList.find(e => e.id === id);
-
-        if (character === undefined) {
-            embed.setDescription(`Character id \`${id}\` not found!`);
-            await interaction.reply({ embeds: [embed] });
-            return;
-        }
-
-        const quotes = character.quotes;
-
-        let quoteList = [];
-        quoteList = quoteList.concat(quotes.ff2).concat(quotes.ff3).concat(quotes.ff4).concat(quotes.other);
-
-        if(quoteList.length === 0) {
-            embed.setDescription(`${character.name} has no quotes!`);
-            await interaction.reply({ embeds: [embed] });
-            return;
-        }
-
-        const choice = Math.floor(Math.random() * quoteList.length);
-
-        if (choice < (quotes.ff2.length) && (quotes.ff2.length !== 0))
-            embed.setFooter({ text: `${character.name} said this during FF2.` });
-        else if (choice >= (quotes.ff2.length) && choice <= (quotes.ff2.length + quotes.ff3.length) && quotes.ff3.length !== 0)
-            embed.setFooter({ text: `${character.name} said this during FF3.` });
-        else if (choice >= (quotes.ff2.length + quotes.ff3.length) && choice <= (quoteList.length - quotes.other.length) && quotes.ff4.length !== 0)
-            embed.setFooter({ text: `${character.name} said this during FF4.` });
-        else
-            embed.setFooter({ text: `${character.name} said this during some adventure.` });
-
-        embed.setDescription(`"${quoteList[choice]}"`)
+        embed.setDescription(`"${quote}"`)
              .setTitle("")
-             .setAuthor({ name: `${character.name} Says...`, iconURL: character.image })
-             .setColor(character.color);
+             .setAuthor({ name: `${speaker} Says...`, iconURL: image })
+             .setFooter({ text: `${speaker} said this in ${location}` })
+             .setColor(color);
 
         await interaction.reply({ embeds: [embed] });
     },
