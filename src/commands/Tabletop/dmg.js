@@ -12,7 +12,7 @@ const { typeSchema } = require('../../models/types')
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('dmg')
-		.setDescription('Rolls for the damage of a weapon.')
+		.setDescription('Rolls for damage.')
         .addStringOption(option =>
             option.setName('weaponid')
                 .setDescription('The weapon\'s id.')
@@ -23,7 +23,7 @@ module.exports = {
                 .setRequired(false))
         .addStringOption(option =>
             option.setName('roll')
-                .setDescription('The amount of damage to deal if a weapon isn\'t used.')
+                .setDescription('The amount of damage to deal if a weapon isn\'t used. Can be static.')
                 .setRequired(false)),
     category: "Tabletop",
 

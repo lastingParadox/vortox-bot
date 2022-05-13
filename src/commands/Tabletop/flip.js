@@ -13,12 +13,8 @@ module.exports = {
 
         let flip = ""
 
-        if (choice === 0) {
-            flip = "Heads";
-        }
-        else {
-            flip = "Tails";
-        }
+        if (choice === 0) flip = "Heads";
+        else flip = "Tails";
 
         const embed = new MessageEmbed()
             .setColor('#FFA500')

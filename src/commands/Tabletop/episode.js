@@ -127,7 +127,7 @@ module.exports = {
                 return;
             }
             else {
-                console.log(`episodes.json successfully written to!`);
+                console.log(`Episode Started!`);
             }
         });
 

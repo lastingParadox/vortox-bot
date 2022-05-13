@@ -1,5 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const fs = require('fs');
+
+const mongoose = require("mongoose");
+const {characterSchema} = require("../../models/characters");
+const {weaponSchema} = require("../../models/weapons");
+const {typeSchema} = require("../../models/types");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -9,19 +13,10 @@ module.exports = {
             subcommand
                 .setName('weapons')
                 .setDescription('List weapons.')
-                .addStringOption(option => {
+                .addStringOption(option =>
                     option.setName('type')
                         .setDescription('The weapon type to list from.')
-                        .setRequired(false)
-                        //let choices;
-                        //let readTypes = fs.readFileSync(process.cwd() + `\\items\\types.json`);
-                        //choices = JSON.parse(readTypes);
-
-                        //for (let type of choices) {
-                        //    option.addChoice(type.id, type.id);
-                        //}
-                        return option
-                    }))
+                        .setRequired(false)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('types')
@@ -34,18 +29,18 @@ module.exports = {
 
 	async execute(interaction) {
         if (interaction.options.getSubcommand() === 'weapons') {
-
             let type = interaction.options.getString('type');
 
-            const jsonString = fs.readFileSync(process.cwd() + `\\items\\weapons.json`);
-            let weapons = JSON.parse(jsonString);
+            const Weapon = mongoose.model('Weapon', weaponSchema);
+            let weapons;
             let output;
 
             if(type !== null) {
-                weapons = weapons.filter(a => a.type === type);
+                weapons = await Weapon.find({ type: type });
                 output = `\`\`\`json\nList of All ${type.toUpperCase()} Weapons\n\n` + `id`.padEnd(20) + `| name`.padEnd(32) + `| type\n` + "-".repeat(70) + "\n";
             }
             else {
+                weapons = await Weapon.find();
                 output = `\`\`\`json\nList of All Weapons\n\n` + `id`.padEnd(20) + `| name`.padEnd(32) + `| type\n` + "-".repeat(70) + "\n";
             }
 
@@ -57,10 +52,11 @@ module.exports = {
 
         else if (interaction.options.getSubcommand() === 'types') {
 
-            let jsonString = fs.readFileSync(process.cwd() + `\\items\\types.json`);
-            const types = JSON.parse(jsonString);
+            const Type = mongoose.model("Types", typeSchema);
+            let types = await Type.find();
 
             let output = `\`\`\`json\nList of All Weapon Type IDs\n\n` + `id\n` + "-".repeat(20) + "\n";
+
             types.forEach(element => output += (element.id).padEnd(20,' ') + '\n');
             output += `\`\`\``;
 
@@ -68,8 +64,9 @@ module.exports = {
         }
 
         else if (interaction.options.getSubcommand() === 'characters') {
-            let jsonString = fs.readFileSync(process.cwd() + `\\items\\characters.json`);
-            const characters = JSON.parse(jsonString);
+
+            const Character = mongoose.model("Character", characterSchema)
+            let characters = await Character.find();
 
             let output = `\`\`\`json\nList of All Characters\n\n` + `id`.padEnd(20) + `| name\n` + "-".repeat(30) + "\n";
             characters.forEach(element => output += (element.id).padEnd(20,' ') + '| ' + element.name + '\n');
