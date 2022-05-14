@@ -11,7 +11,7 @@ const { typeSchema } = require('../../models/types')
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('edit')
-        .setDescription('Adds a weapon to the list.')
+        .setDescription('Edits a weapon, weapon type, or character.')
         .addSubcommand(subcommand =>
             subcommand
                 .setName('weapon')
@@ -107,18 +107,18 @@ module.exports = {
             model = mongoose.model('Types', typeSchema);
         }
 
-        const editDoc = async () => {
-            try {
-                const find = await model.findOne({ id: id })
-                find[attribute] = edit;
-                await find.save();
-                return console.log("return")
-            } catch (err) {
-                console.log(err);
-            }
+        try {
+            const find = await model.findOne({ id: id })
+            if (!find) throw new Error(`No document with id matching ${id} found.`);
+            find[attribute] = edit;
+            await find.save();
+        } catch (err) {
+            console.log(err);
+            embed.setDescription(`\`${id}\` does not exist!`)
+            interaction.reply({ embeds: [embed] });
+            return;
         }
 
-        await editDoc();
 
         embed.setColor('#FFA500')
             .setTitle(`Editing \`${id}\` Succeeded!`)

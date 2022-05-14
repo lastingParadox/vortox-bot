@@ -35,18 +35,35 @@ module.exports = {
         const Character = mongoose.model('Character', characterSchema);
         const Weapon = mongoose.model('Weapon', weaponSchema);
 
-        const character = await Character.findOne({ id: characterId })
-        const weapon = await Weapon.findOne({ id: weaponId })
+        let character;
+        let weapon;
 
         const embed = new MessageEmbed()
             .setColor('#FF0000')
-            .setTitle(`Rolling for ${weaponId} Damage`)
+            .setTitle(`Rolling for Damage Failed!`);
 
-        if ((character === null && characterId !== null) || (weapon === null && weaponId !== null)) {
-            embed.setTitle(`ID Does Not Exist!`)
-                 .setDescription("Please provide a valid weapon and or character ID.")
-            await interaction.reply({ embeds: [embed] });
-            return;
+        if (characterId !== null) {
+            try {
+                character = await Character.findOne({ id: characterId });
+                if (!character) throw new Error(`No document with id matching ${characterId} found.`);
+            } catch (err) {
+                console.log(err);
+                embed.setDescription(`\`${characterId}\` does not exist!`)
+                interaction.reply({ embeds: [embed] });
+                return;
+            }
+        }
+
+        if (weaponId !== null) {
+            try {
+                weapon = await Weapon.findOne({ id: weaponId });
+                if (!character) throw new Error(`No document with id matching ${weaponId} found.`);
+            } catch (err) {
+                console.log(err);
+                embed.setDescription(`\`${weaponId}\` does not exist!`)
+                interaction.reply({ embeds: [embed] });
+                return;
+            }
         }
 
         if (weaponId !== null) {
@@ -57,24 +74,24 @@ module.exports = {
             const accuracy = Math.floor(Math.random() * 100) + 1;
 
             if(accuracy <= type.missRate) {
-                embed.setTitle(`${weapon.name} Attack Missed!`);
-                embed.setDescription(`Rolling for ${weapon.name} accuracy...\nRolled a ${accuracy}!\nThe attack misses!`)
-                embed.setColor('#E34234');
+                embed.setTitle(`${weapon.name} Attack Missed!`)
+                    .setDescription(`Rolling for ${weapon.name} accuracy...\nRolled a ${accuracy}!\nThe attack misses!`)
+                    .setColor('#E34234');
                 await interaction.reply({ embeds: [embed] });
                 return;
             }
 
             const damage = diceRoller.rollValue(weapon.damage);
 
-            embed.setTitle(`${weapon.name} did \`${weapon.damage}\` Damage!`);
-            embed.setDescription(`Rolling for ${weapon.name} accuracy...\nRolled a ${accuracy}!\nThe attack hits for \`${damage}\` damage!`)
+            embed.setTitle(`${weapon.name} did \`${weapon.damage}\` Damage!`)
+                 .setDescription(`Rolling for ${weapon.name} accuracy...\nRolled a ${accuracy}!\nThe attack hits for \`${damage}\` damage!`)
 
             if (characterId !== null) {
 
                 character.hp -= damage;
 
-                embed.setTitle(`${weapon.name} did \`${damage}\` Damage to \`${character.name}\`!`);
-                embed.setDescription(`Rolling for ${weapon.name} accuracy...\n` +
+                embed.setTitle(`${weapon.name} did \`${damage}\` Damage to \`${character.name}\`!`)
+                     .setDescription(`Rolling for ${weapon.name} accuracy...\n` +
                     `Rolled a ${accuracy}!\n` +
                     `The attack hits for \`${damage}\` damage!\n` +
                     `${character.name} now has \`(${character.hp}/${character.maxHp})\` hp.`);
@@ -97,9 +114,9 @@ module.exports = {
 
             character.hp -= damage;
 
-            embed.setTitle(`Damage to \`${character.name}\`!`);
-            embed.setDescription(`${character.name} is hit for \`${damage}\` damage!\n` +
-                `${character.name} now has \`(${character.hp}/${character.maxHp})\` hp.`);
+            embed.setTitle(`Damage to \`${character.name}\`!`)
+                 .setDescription(`${character.name} is hit for \`${damage}\` damage!\n` +
+                     `${character.name} now has \`(${character.hp}/${character.maxHp})\` hp.`);
 
             character.save();
         }

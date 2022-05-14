@@ -27,16 +27,19 @@ module.exports = {
         const roll = interaction.options.getString('roll')
 
         const Character = mongoose.model('Character', characterSchema);
-        const character = await Character.findOne({ id: characterId })
+        let character;
 
         const embed = new MessageEmbed()
             .setColor('#FF0000')
-            .setTitle(`Rolling for ${weaponId} Damage`)
+            .setTitle(`Healing \`${characterId}\` Failed`)
 
-        if ((character === null && characterId !== null)) {
-            embed.setTitle(`ID Does Not Exist!`)
-                 .setDescription("Please provide a valid character ID.")
-            await interaction.reply({ embeds: [embed] });
+        try {
+            character = await Character.findOne({ id: characterId });
+            if (!character) throw new Error(`No document with id matching ${characterId} found.`);
+        } catch (err) {
+            console.log(err);
+            embed.setDescription(`\`${characterId}\` does not exist!`)
+            interaction.reply({ embeds: [embed] });
             return;
         }
 
