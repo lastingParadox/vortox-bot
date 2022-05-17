@@ -14,6 +14,7 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "dice-roller-parser": "^0.1.8",
     "discord-api-types": "^0.23.1",
+    "discord-fetch-all": "^3.0.2",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.1",
     "mongodb": "^4.6.0",

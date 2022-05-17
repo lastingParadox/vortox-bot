@@ -140,7 +140,7 @@ module.exports = {
             embed.setDescription(`Successfully added \`${id}\` with \`${hp}\` hp to the characters list!`);
         }
 
-        embed.setColor('#FFA500');
+        embed.setColor('#50C878');
         embed.setTitle(`Adding ${id} Succeeded!`);
 
         await interaction.reply({ embeds: [embed] });

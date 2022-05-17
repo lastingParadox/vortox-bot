@@ -1,5 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { MessageEmbed } = require('discord.js');
+
+const fetchAll = require('discord-fetch-all');
 const fs = require('fs');
 
 function msToTime(duration) {
@@ -92,6 +94,8 @@ module.exports = {
 
         else if (interaction.options.getSubcommand() === "stop") {
 
+            const allMessages = await fetchAll.messages(thread);
+
             if(thread === "") {
                 embed.setTitle('Unable to Stop Episode!')
                      .setDescription(`There is no episode currently in progress!`);
@@ -103,7 +107,7 @@ module.exports = {
 
             episodeList.episodeThread = "";
             episodeList.users = [];
-            episodeList.episodes.push({ name: thread.name, messageCount: thread.messages.cache.size, episodeLength: msToTime(thread.lastMessage.createdAt - thread.createdAt) });
+            episodeList.episodes.push({ name: thread.name, messageCount: allMessages.length, episodeLength: msToTime(thread.lastMessage.createdAt - thread.createdAt) });
 
             interaction.client.user.setActivity("Space Rulebook", {type: 'WATCHING'});
 
@@ -125,9 +129,6 @@ module.exports = {
                 embed.setDescription(`Failed to edit an episode! (Check the console.)`);
                 interaction.reply({ embeds: [embed] });
                 return;
-            }
-            else {
-                console.log(`Episode Started!`);
             }
         });
 

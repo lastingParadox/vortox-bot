@@ -67,7 +67,7 @@ module.exports = {
                         .addChoice('name', 'name')
                         .addChoice('description', 'description')
                         .addChoice('hp', 'hp')
-                        .addChoice('maxhp', 'maxhp')
+                        .addChoice('maxHp', 'maxHp')
                         .addChoice('image', 'image')
                         .addChoice('color', 'color'))
                 .addStringOption(option =>
@@ -119,8 +119,7 @@ module.exports = {
             return;
         }
 
-
-        embed.setColor('#FFA500')
+        embed.setColor('#50C878')
             .setTitle(`Editing \`${id}\` Succeeded!`)
             .setDescription(`Successfully changed \`${id}\`'s \`${attribute}\` to \`${edit}\``);
 

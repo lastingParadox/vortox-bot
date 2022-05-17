@@ -16,12 +16,8 @@ function syllableCounter(word) {
         count -= 1
     }
 
-    if (count === 2) {
-        return 1;
-    }
-    else {
-        return 0;
-    }
+    if (count === 2) return 1;
+    else return 0;
 }
 
 module.exports = {
