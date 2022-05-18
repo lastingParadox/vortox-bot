@@ -36,7 +36,8 @@ const commandFolders = fs.readdirSync("./commands");
 		"i'm all ears.",
 		"u-uh... you're a star!",
 		"plot interference",
-		"your balls"
+		"your balls",
+		"uh-oh stinky"
 	]
 
 	let index = Math.floor(Math.random() * list.length);
