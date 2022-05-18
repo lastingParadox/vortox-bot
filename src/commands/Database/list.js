@@ -1,9 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const mongoose = require("mongoose");
-const {characterSchema} = require("../../models/characters");
-const {weaponSchema} = require("../../models/weapons");
-const {typeSchema} = require("../../models/types");
+const { characterSchema } = require("../../models/characters");
+const { weaponSchema } = require("../../models/weapons");
+const { typeSchema } = require("../../models/types");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -36,11 +36,11 @@ module.exports = {
             let output;
 
             if(type !== null) {
-                weapons = await Weapon.find({ type: type });
+                weapons = await Weapon.find({ type: type, guildId: interaction.guildId });
                 output = `\`\`\`json\nList of All ${type.toUpperCase()} Weapons\n\n` + `id`.padEnd(20) + `| name`.padEnd(32) + `| type\n` + "-".repeat(70) + "\n";
             }
             else {
-                weapons = await Weapon.find();
+                weapons = await Weapon.find({ guildId: interaction.guildId });
                 output = `\`\`\`json\nList of All Weapons\n\n` + `id`.padEnd(20) + `| name`.padEnd(32) + `| type\n` + "-".repeat(70) + "\n";
             }
 
@@ -53,7 +53,7 @@ module.exports = {
         else if (interaction.options.getSubcommand() === 'types') {
 
             const Type = mongoose.model("Types", typeSchema);
-            let types = await Type.find();
+            let types = await Type.find({ guildId: interaction.guildId });
 
             let output = `\`\`\`json\nList of All Weapon Type IDs\n\n` + `id\n` + "-".repeat(20) + "\n";
 
@@ -66,7 +66,7 @@ module.exports = {
         else if (interaction.options.getSubcommand() === 'characters') {
 
             const Character = mongoose.model("Character", characterSchema)
-            let characters = await Character.find();
+            let characters = await Character.find({ guildId: interaction.guildId });
 
             let output = `\`\`\`json\nList of All Characters\n\n` + `id`.padEnd(20) + `| name\n` + "-".repeat(30) + "\n";
             characters.forEach(element => output += (element.id).padEnd(20,' ') + '| ' + element.name + '\n');

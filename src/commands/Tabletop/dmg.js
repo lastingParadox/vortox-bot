@@ -44,7 +44,7 @@ module.exports = {
 
         if (characterId !== null) {
             try {
-                character = await Character.findOne({ id: characterId });
+                character = await Character.findOne({ id: characterId, guildId: interaction.guildId });
                 if (!character) throw new Error(`No document with id matching ${characterId} found.`);
             } catch (err) {
                 console.log(err);
@@ -56,7 +56,7 @@ module.exports = {
 
         if (weaponId !== null) {
             try {
-                weapon = await Weapon.findOne({ id: weaponId });
+                weapon = await Weapon.findOne({ id: weaponId, guildId: interaction.guildId });
                 if (!character) throw new Error(`No document with id matching ${weaponId} found.`);
             } catch (err) {
                 console.log(err);
@@ -69,7 +69,7 @@ module.exports = {
         if (weaponId !== null) {
 
             const Type = mongoose.model('Type', typeSchema);
-            const type = await Type.findOne({ id: weapon.type })
+            const type = await Type.findOne({ id: weapon.type, guildId: interaction.guildId })
 
             const accuracy = Math.floor(Math.random() * 100) + 1;
 

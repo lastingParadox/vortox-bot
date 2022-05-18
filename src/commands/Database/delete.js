@@ -56,7 +56,7 @@ module.exports = {
             .setDescription(`Message content did not match \`${id}\` or ${interaction.member.displayName} did not respond in time.`)
 
         const Location = mongoose.model('Location', locationSchema);
-        const locations = await Location.find();
+        const locations = await Location.find({ guildId: interaction.guildId });
         let locationArray = [];
 
         locations.forEach(location => locationArray.push(location));
@@ -83,7 +83,7 @@ module.exports = {
         const deleteDoc = async () => {
             try {
                 console.log(`Deleted ${temp.name}! (Id: ${temp.id})`);
-                return model.deleteOne({ id: id });
+                return model.deleteOne({ id: id, guildId: interaction.guildId });
             } catch (err) {
                 console.log(err);
             }

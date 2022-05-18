@@ -60,7 +60,7 @@ module.exports = {
         else if (interaction.options.getSubcommand() === 'type') model = mongoose.model('Type', typeSchema);
         else if (interaction.options.getSubcommand() === 'location') model = mongoose.model('Location', locationSchema);
 
-        let query = await model.findOne({ id: { $regex : new RegExp(id, "i") } }).then( result => {
+        let query = await model.findOne({ id: { $regex : new RegExp(id, "i") }, guildId: interaction.guildId }).then( result => {
             if (result === null) {
                 return null;
             }

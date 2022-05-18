@@ -12,7 +12,9 @@ let characterSchema = new Schema( {
     quotes: [{
         quote: String,
         location: String
-    }]
+    }],
+    guildId: String,
+    userId: String
 
 })
 

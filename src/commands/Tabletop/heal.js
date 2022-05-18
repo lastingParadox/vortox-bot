@@ -34,7 +34,7 @@ module.exports = {
             .setTitle(`Healing \`${characterId}\` Failed`)
 
         try {
-            character = await Character.findOne({ id: characterId });
+            character = await Character.findOne({ id: characterId, guildId: interaction.guildId });
             if (!character) throw new Error(`No document with id matching ${characterId} found.`);
         } catch (err) {
             console.log(err);

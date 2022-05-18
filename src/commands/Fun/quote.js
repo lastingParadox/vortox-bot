@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 
 const mongoose = require('mongoose');
 const { characterSchema } = require('../../models/characters')
-const {locationSchema} = require("../../models/locations");
+const { locationSchema } = require("../../models/locations");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,17 +22,17 @@ module.exports = {
         let id = interaction.options.getString('id');
         if (id !== null) id = id.toLowerCase();
 
-        const embed = new MessageEmbed()
-            .setColor('#FF0000')
-            .setTitle(`\`${id}\` Quote`);
-
         let choiceLocation = interaction.options.getString('location')
 
         if (choiceLocation !== null) {
             choiceLocation = choiceLocation.toLowerCase();
             let Location = mongoose.model('Location', locationSchema);
 
-            await Location.findOne({ id: { $regex : new RegExp(choiceLocation, "i") } }).then((result) => {
+        const embed = new MessageEmbed()
+            .setColor('#FF0000')
+            .setTitle(`\`${id}\` Quote`);
+
+            await Location.findOne({ id: { $regex : new RegExp(choiceLocation, "i") }, guildId: interaction.guildId }).then(async (result) => {
                 if (result === null) {
                     embed.setTitle(`\`${choiceLocation}\` Quote`)
                         .setDescription(`Location \`${choiceLocation}\` does not exist!`);
@@ -45,7 +45,7 @@ module.exports = {
         let quotedChar = 0, randomQuote;
 
         if (id === null) {
-            await Character.find().then(characters => {
+            await Character.find({ guildId: interaction.guildId }).then(characters => {
                 while(quotedChar === 0) {
                     quotedChar = characters[Math.floor(Math.random() * characters.length)];
                     if (quotedChar.quotes.length === 0 || (choiceLocation !== null && quotedChar.quotes.filter(value => value.location.toLowerCase() === choiceLocation).length === 0))
@@ -55,7 +55,7 @@ module.exports = {
         }
         else {
             try {
-                quotedChar = await Character.findOne({ id: id });
+                quotedChar = await Character.findOne({ id: id, guildId: interaction.guildId });
                 if (!quotedChar) throw new Error(`No document with id matching ${id} found.`);
             } catch (err) {
                 console.log(err);

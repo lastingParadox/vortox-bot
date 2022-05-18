@@ -6,7 +6,9 @@ let weaponSchema = new Schema( {
     name: String,
     type: String,
     damage: String,
-    description: String
+    description: String,
+    guildId: String,
+    userId: String
 })
 
 module.exports = { weaponSchema }

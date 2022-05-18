@@ -20,7 +20,7 @@ module.exports = {
 			.setColor('#FFA500')
 			.setTitle(`Rolling ${dice}`);
 
-        let roll
+        let roll;
 
 		try {
 			roll = diceRoller.rollValue(dice)
@@ -31,7 +31,6 @@ module.exports = {
 				 .setDescription(`Invalid dice format!`);
 		}
 
-		const command = require(`./add.js`);
 		await interaction.reply({ embeds: [embed] });
 	},
 };

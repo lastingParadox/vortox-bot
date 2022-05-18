@@ -108,7 +108,7 @@ module.exports = {
         }
 
         try {
-            const find = await model.findOne({ id: id })
+            const find = await model.findOne({ id: id, guildId: interaction.guildId })
             if (!find) throw new Error(`No document with id matching ${id} found.`);
             find[attribute] = edit;
             await find.save();

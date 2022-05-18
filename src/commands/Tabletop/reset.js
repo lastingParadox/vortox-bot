@@ -22,7 +22,7 @@ module.exports = {
             .setTitle(`Resetting`);
 
         if (id === "all") {
-            await Character.find().then(characters => {
+            await Character.find({ guildId: interaction.guildId }).then(characters => {
                 characters.forEach(character => {
                     character.hp = character.maxHp;
                     character.save();
@@ -32,7 +32,7 @@ module.exports = {
         }
         else {
             try {
-                await Character.find({id: id}).then(character => {
+                await Character.find({ id: id, guildId: interaction.guildId }).then(character => {
                     character[0].hp = character[0].maxHp;
                     character[0].save();
                     embed.setDescription(`${character[0].name} was successfully reset!\n${character[0].name} now has \`(${character[0].hp}/${character[0].maxHp})\` hp.`)

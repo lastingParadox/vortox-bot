@@ -68,7 +68,7 @@ module.exports = {
             return;
         }
 
-        if (addType === 'Weapon') {
+        if (addType === 'weapon') {
             const type = interaction.options.getString('type');
             const damage = interaction.options.getString('damage');
             const roller = new DiceRoller();
@@ -82,7 +82,7 @@ module.exports = {
             }
 
             const Weapon = mongoose.model('Weapon', weaponSchema);
-            const newWeapon = new Weapon({ id: id, name: (id.charAt(0).toUpperCase() + id.slice(1)), type: type, damage: damage, description: "Use `/edit weapon` to change this!" })
+            const newWeapon = new Weapon({ id: id, name: (id.charAt(0).toUpperCase() + id.slice(1)), type: type, damage: damage, description: "Use `/edit weapon` to change this!", guildId: interaction.guildId })
 
             try {
                 await newWeapon.save();
@@ -98,11 +98,11 @@ module.exports = {
 
         }
 
-        else if (addType === 'Type') {
+        else if (addType === 'type') {
             const missrate = interaction.options.getString('missrate');
 
             const Type = mongoose.model('Type', typeSchema);
-            const newType = new Type({ id: id, missRate: missrate });
+            const newType = new Type({ id: id, missRate: missrate, guildId: interaction.guildId });
 
             try {
                 await newType.save();
@@ -118,14 +118,14 @@ module.exports = {
             embed.setDescription(`Successfully added \`${id}\` with miss rate \`${missrate}%\` to the weapon types list!`);
         }
 
-        else if (addType === 'Character') {
+        else if (addType === 'character') {
             let hp = interaction.options.getInteger('hp');
             if (hp === null) {
                 hp = 30;
             }
 
             const Character = mongoose.model('Character', characterSchema);
-            const newCharacter = new Character({ id: id, name: (id.charAt(0).toUpperCase() + id.slice(1)), description: "Use `/edit character` to change this!", hp: hp, maxHp: hp, image: "", color: "#FFA500" });
+            const newCharacter = new Character({ id: id, name: (id.charAt(0).toUpperCase() + id.slice(1)), description: "Use `/edit character` to change this!", hp: hp, maxHp: hp, image: "", color: "#FFA500", guildId: interaction.guildId });
 
             try {
                 await newCharacter.save();
