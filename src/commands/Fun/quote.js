@@ -19,32 +19,21 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction) {
+
+        let quotedChar = 0, randomQuote;
+        const Character = mongoose.model('Character', characterSchema);
+
         let id = interaction.options.getString('id');
-        if (id !== null) id = id.toLowerCase();
+        let choiceLocation = interaction.options.getString('location');                
 
         const embed = new MessageEmbed()
             .setColor('#FF0000')
             .setTitle(`\`${id}\` Quote`);
 
-        let choiceLocation = interaction.options.getString('location')
+        const ID = (id === null ? false : true);
+        const LOC = (choiceLocation === null ? false : true);
 
-        if (choiceLocation !== null) {
-            choiceLocation = choiceLocation.toLowerCase();
-            let Location = mongoose.model('Location', locationSchema);
-
-            await Location.findOne({ id: { $regex : new RegExp(choiceLocation, "i") } }).then((result) => {
-                if (result === null) {
-                    embed.setTitle(`\`${choiceLocation}\` Quote`)
-                        .setDescription(`Location \`${choiceLocation}\` does not exist!`);
-                    return interaction.reply({ embeds: [embed] });
-                }
-            })
-        }
-
-        const Character = mongoose.model('Character', characterSchema);
-        let quotedChar = 0, randomQuote;
-
-        if (id === null) {
+        if (!ID && !LOC) {
             await Character.find().then(characters => {
                 while(quotedChar === 0) {
                     quotedChar = characters[Math.floor(Math.random() * characters.length)];
@@ -52,31 +41,52 @@ module.exports = {
                         quotedChar = 0;
                 }
             });
-        }
-        else {
-            try {
-                quotedChar = await Character.findOne({ id: id });
-                if (!quotedChar) throw new Error(`No document with id matching ${id} found.`);
-            } catch (err) {
-                console.log(err);
-                embed.setTitle('Quoting Failed')
-                    .setDescription(`Character \`${id}\` does not exist!`);
-                interaction.reply({ embeds: [embed] });
-                return;
+            
+            // Never used...
+            //randomQuote = quotedChar.quotes[Math.floor(Math.random() * quotedChar.quotes.length)];
+        } else {
+            switch(true) {
+                case(ID):
+                    try {
+                        id = id.toLowerCase();
+                        quotedChar = await Character.findOne({ id: id });
+                        if (!quotedChar) throw new Error(`No document with id matching ${id} found.`);
+                    } catch (err) {
+                        console.log(err);
+                        embed.setTitle('Quoting Failed')
+                            .setDescription(`Character \`${id}\` does not exist!`);
+                        interaction.reply({ embeds: [embed] });
+                        return;
+                    } finally {
+                        break;
+                    }
+                case (LOC):
+                    choiceLocation = choiceLocation.toLowerCase();
+                    let Location = mongoose.model('Location', locationSchema);
+
+                    await Location.findOne({ id: { $regex : new RegExp(choiceLocation, "i") } }).then((result) => {
+                        if (result === null) {
+                            embed.setTitle(`\`${choiceLocation}\` Quote`)
+                                .setDescription(`Location \`${choiceLocation}\` does not exist!`);
+                            return interaction.reply({ embeds: [embed] });
+                        }
+                    })
+                    break;
             }
+
+            if(LOC) {
+                let tempArray = quotedChar.quotes.filter(value => value.location.toLowerCase() === choiceLocation);
+                randomQuote = tempArray[Math.floor(Math.random() * tempArray.length)];
+            } 
         }
 
-        if(choiceLocation !== null) {
-            let tempArray = quotedChar.quotes.filter(value => value.location.toLowerCase() === choiceLocation);
-            randomQuote = tempArray[Math.floor(Math.random() * tempArray.length)];
-        }
-        else randomQuote = quotedChar.quotes[Math.floor(Math.random() * quotedChar.quotes.length)];
+        
 
         let speaker = quotedChar.name;
-        let quote = randomQuote.quote;
-        let location = randomQuote.location;
         let image = quotedChar.image;
         let color = quotedChar.color;
+        let quote = randomQuote.quote;
+        let location = randomQuote.location;
 
         embed.setDescription(`"${quote}"`)
              .setTitle("")
