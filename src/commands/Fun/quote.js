@@ -38,15 +38,13 @@ module.exports = {
         } 
 
         else if (!ID) {
-            if (id === null) {
-                await Character.find().then(characters => {
-                    while(quotedChar === 0) {
-                        quotedChar = characters[Math.floor(Math.random() * characters.length)];
-                        if (quotedChar.quotes.length === 0 || (choiceLocation !== null && quotedChar.quotes.filter(value => value.location.toLowerCase() === choiceLocation).length === 0))
-                            quotedChar = 0;
-                    }
-                });
-            }
+            await Character.find().then(characters => {
+                while(quotedChar === 0) {
+                    quotedChar = characters[Math.floor(Math.random() * characters.length)];
+                    if (quotedChar.quotes.length === 0 || (choiceLocation !== null && quotedChar.quotes.filter(value => value.location.toLowerCase() === choiceLocation).length === 0))
+                        quotedChar = 0;
+                }
+            });
         } 
 
         else {
