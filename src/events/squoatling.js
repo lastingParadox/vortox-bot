@@ -1,46 +1,30 @@
 function syllableCounter(word) {
 
+    const vowels = ['a','e','i','o','u','y']
     const lowerWord = word.toLowerCase();
-    let count = 0
+    let count = 0;
 
-    let vowels = "aeiouy"
-    if (vowels.indexOf(lowerWord[0]) !== -1) {
-        count += 1
-    }
-    for (let index = 1; index < lowerWord.length; index++) {
-        if (vowels.indexOf(lowerWord[index]) !== -1 && vowels.indexOf(lowerWord[index - 1]) === -1) {
-            count += 1
+    for (let i = 0; i < lowerWord.length; i++) {
+        if (i === 0) {
+            if (vowels.includes(word[i])) count++;
+            continue;
         }
-    }
-    if (vowels.indexOf(word.charAt(word.length - 1)) !== -1 && vowels.indexOf(word.charAt(word.length - 2)) === -1) {
-        count -= 1
+        if(vowels.includes(word[i]) && !(vowels.includes(word[i-1]))) count++;
     }
 
-    if (count === 2) return 1;
-    else return 0;
+    if (count === 0) count++;
+
+    return count;
 }
 
 module.exports = {
     name: 'messageCreate',
 
     execute(message) {
-        if (message.author.bot) return false;
+        if (message.author.bot) return;
+        if (message.content.indexOf(' ') > -1 || message.content.toLowerCase().indexOf("squ") === -1 || message.content.toLowerCase() === "squoat") return;
 
-        if (message.content.indexOf(' ') > -1)
-            return;
-
-        let valid
-
-        let squoatlingCheck = message.content.toLowerCase().indexOf("squ");
-
-        if (squoatlingCheck !== -1) {
-            valid = syllableCounter(message.content);
-        }
-        else {
-            return;
-        }
-
-        if (valid) {
+        if (syllableCounter(message.content) === 2) {
             message.channel.send(`${message.author}, ${message.content} is a valid squoatling name.`);
         }
         else {
