@@ -80,8 +80,6 @@ module.exports = {
             } 
         }
 
-        
-
         let speaker = quotedChar.name;
         let image = quotedChar.image;
         let color = quotedChar.color;
