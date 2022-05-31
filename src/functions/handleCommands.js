@@ -26,8 +26,13 @@ module.exports = (client) => {
                     Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
                     {body: client.commandArray},
                 );
+                await console.log('Successfully reloaded application (/) commands in Burger Dictator.');
 
-                console.log('Successfully reloaded application (/) commands.');
+                await rest.put(
+                    Routes.applicationGuildCommands(process.env.CLIENT_ID, "758501917617422428"),
+                    {body: client.commandArray},
+                );
+                await console.log('Successfully reloaded application (/) commands in Squobe.');
             }
             catch (error) {
                 console.error(error);

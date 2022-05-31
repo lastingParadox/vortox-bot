@@ -31,13 +31,19 @@ module.exports = {
                 .setDescription('Ends the current episode.'))
         .addSubcommand(subcommand =>
             subcommand
+                .setName('skip')
+                .setDescription('Skips the current player\'s turn.'))
+        .addSubcommand(subcommand =>
+            subcommand
                 .setName('turn')
                 .setDescription('Displays who\'s turn it is.')),
 
     async execute(interaction) {
 
+        await interaction.deferReply( { ephemeral: true });
+
         if(interaction.member.voice.channelId === null) {
-            await interaction.reply("You are not connected to a voice channel!");
+            await interaction.editReply("You are not connected to a voice channel!");
             return;
         }
 
@@ -55,7 +61,7 @@ module.exports = {
             if(thread !== "") {
                 embed.setTitle('Unable to Start New Episode!')
                      .setDescription(`Episode ${episodeList.episodeCount} is currently in progress!`);
-                await interaction.reply({ embeds: [embed] });
+                await interaction.editReply({ embeds: [embed] });
                 return;
             }
 
@@ -70,10 +76,10 @@ module.exports = {
             episodeList.users = [];
 
             interaction.member.voice.channel.members.each(member=>{
-                let temp = {id: member.id, name: member.user.tag, turn: false};
+                let temp = {id: member.id, name: member.displayName, turn: false};
                 episodeList.users.push(temp);
                 thread.members.add(member.id);
-            })
+            });
 
             episodeList.users.sort(function(a, b) {
                 const nameA = a.name.toLowerCase();
@@ -82,7 +88,17 @@ module.exports = {
                 if (nameA < nameB) return -1;
                 if (nameA > nameB) return 1;
                 return 0;
-            })
+            });
+
+            let dmList = await interaction.guild.roles.fetch("977241924505313310").then(role => {
+                let array = [];
+                role.members.forEach(member => {
+                    array.push(member.id);
+                })
+                return array;
+            });
+
+            episodeList.users.push({id: "DM", ids: dmList, turn: false});
             episodeList.users[0]["turn"] = true;
 
             interaction.client.user.setActivity("Final Frontier", {type: 'PLAYING'});
@@ -92,22 +108,38 @@ module.exports = {
                  .setDescription(`Started new [episode](https://discord.com/channels/${interaction.guild.id}/${thread.id})!`);
         }
 
-        else if (interaction.options.getSubcommand() === "stop") {
+        else if (interaction.options.getSubcommand() === "skip") {
 
-            const allMessages = await fetchAll.messages(thread);
+            const user = episodeList.users.find(x => x.turn === true);
+            const newUser = episodeList['users'][(episodeList.users.findIndex(element => element === user) + 1) % episodeList.users.length]
+            user.turn = false;
+
+            newUser.turn = true;
+
+            embed.setTitle("Skipping Turn")
+
+            if (user.id === "DM")
+                embed.setDescription(`Skipped The DM's turn.\nIt is now `);
+            else
+                embed.setDescription(`Skipped <@${user.id}>'s turn.`);
+        }
+
+        else if (interaction.options.getSubcommand() === "stop") {
 
             if(thread === "") {
                 embed.setTitle('Unable to Stop Episode!')
                      .setDescription(`There is no episode currently in progress!`);
-                await interaction.reply({ embeds: [embed] });
+                await interaction.editReply({ embeds: [embed] });
                 return;
             }
+
+            const allMessages = await fetchAll.messages(thread);
 
             thread.send("Ending episode!");
 
             episodeList.episodeThread = "";
             episodeList.users = [];
-            episodeList.episodes.push({ name: thread.name, messageCount: allMessages.length, episodeLength: msToTime(thread.lastMessage.createdAt - thread.createdAt) });
+            episodeList.episodes.push({ name: thread.name, messageCount: allMessages.length, episodeLength: msToTime(Date.now() - thread.createdAt) });
 
             interaction.client.user.setActivity("Space Rulebook", {type: 'WATCHING'});
 
@@ -118,23 +150,27 @@ module.exports = {
         else if (interaction.options.getSubcommand() === "turn") {
             const user = episodeList.users.find(x => x.turn === true);
 
-            embed.setTitle("Episode Turn")
-                 .setDescription(`It's <@${user.id}>'s turn to 8ball!`);
+            if (user.id !== "DM") {
+                embed.setTitle("Episode Turn")
+                    .setDescription(`It's <@${user.id}>'s turn to 8ball!`);
+            }
+            else {
+                embed.setTitle("Episode Turn")
+                    .setDescription(`It's The DM's turn to 8ball!`);
+            }
         }
 
-        fs.writeFile(process.cwd() + `\\items\\episodes.json`, JSON.stringify(episodeList, null, 2), err => {
+        fs.writeFile(process.cwd() + `\\items\\episodes.json`, JSON.stringify(episodeList, null, 2), async err => {
             if (err) {
                 console.log(`Error writing to episodes.json.`, err);
                 embed.setTitle(`Writing to Episode Failed!`);
                 embed.setDescription(`Failed to edit an episode! (Check the console.)`);
-                interaction.reply({ embeds: [embed] });
-                return;
             }
         });
 
         embed.setColor('#FFA500');
 
-        await interaction.reply( {embeds: [embed] })
+        await interaction.editReply( {embeds: [embed] })
 
         if (interaction.options.getSubcommand() === "stop") await thread.setArchived(true);
     },

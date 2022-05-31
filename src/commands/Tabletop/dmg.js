@@ -57,7 +57,7 @@ module.exports = {
         if (weaponId !== null) {
             try {
                 weapon = await Weapon.findOne({ id: weaponId, guildId: interaction.guildId });
-                if (!character) throw new Error(`No document with id matching ${weaponId} found.`);
+                if (!weapon) throw new Error(`No document with id matching ${weaponId} found.`);
             } catch (err) {
                 console.log(err);
                 embed.setDescription(`\`${weaponId}\` does not exist!`)
@@ -83,7 +83,7 @@ module.exports = {
 
             const damage = diceRoller.rollValue(weapon.damage);
 
-            embed.setTitle(`${weapon.name} did \`${weapon.damage}\` Damage!`)
+            embed.setTitle(`${weapon.name} did \`${damage}\` Damage!`)
                  .setDescription(`Rolling for ${weapon.name} accuracy...\nRolled a ${accuracy}!\nThe attack hits for \`${damage}\` damage!`)
 
             if (characterId !== null) {

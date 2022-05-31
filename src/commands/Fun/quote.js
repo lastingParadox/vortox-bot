@@ -24,13 +24,13 @@ module.exports = {
 
         let choiceLocation = interaction.options.getString('location')
 
-        if (choiceLocation !== null) {
-            choiceLocation = choiceLocation.toLowerCase();
-            let Location = mongoose.model('Location', locationSchema);
-
         const embed = new MessageEmbed()
             .setColor('#FF0000')
             .setTitle(`\`${id}\` Quote`);
+
+        if (choiceLocation !== null) {
+            choiceLocation = choiceLocation.toLowerCase();
+            let Location = mongoose.model('Location', locationSchema);
 
             await Location.findOne({ id: { $regex : new RegExp(choiceLocation, "i") }, guildId: interaction.guildId }).then(async (result) => {
                 if (result === null) {
@@ -45,22 +45,30 @@ module.exports = {
         let quotedChar = 0, randomQuote;
 
         if (id === null) {
-            await Character.find({ guildId: interaction.guildId }).then(characters => {
+            await Character.find({ guildId: interaction.guildId }).then(async characters => {
                 while(quotedChar === 0) {
+                    if (characters.length === 0) {
+                        embed.setDescription("No characters with quotes exist!")
+                        await interaction.reply({ embeds: [embed] });
+                        return;
+                    }
                     quotedChar = characters[Math.floor(Math.random() * characters.length)];
-                    if (quotedChar.quotes.length === 0 || (choiceLocation !== null && quotedChar.quotes.filter(value => value.location.toLowerCase() === choiceLocation).length === 0))
+                    if (quotedChar.quotes.length === 0 || (choiceLocation !== null && quotedChar.quotes.filter(value => value.location.toLowerCase() === choiceLocation).length === 0)) {
+                        characters.splice(characters.indexOf(quotedChar), 1);
                         quotedChar = 0;
+                    }
                 }
             });
+            if (quotedChar === 0) return;
         }
         else {
             try {
                 quotedChar = await Character.findOne({ id: id, guildId: interaction.guildId });
-                if (!quotedChar) throw new Error(`No document with id matching ${id} found.`);
+                if (!quotedChar || quotedChar.quotes.length === 0) throw new Error(`No document with id matching ${id} found.`);
             } catch (err) {
                 console.log(err);
                 embed.setTitle('Quoting Failed')
-                    .setDescription(`Character \`${id}\` does not exist!`);
+                    .setDescription(`Character \`${id}\` has no quotes or does not exist!`);
                 interaction.reply({ embeds: [embed] });
                 return;
             }

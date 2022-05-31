@@ -68,7 +68,7 @@ module.exports = {
             return;
         }
 
-        if (addType === 'weapon') {
+        if (addType === 'Weapon') {
             const type = interaction.options.getString('type');
             const damage = interaction.options.getString('damage');
             const roller = new DiceRoller();
@@ -98,7 +98,7 @@ module.exports = {
 
         }
 
-        else if (addType === 'type') {
+        else if (addType === 'Type') {
             const missrate = interaction.options.getString('missrate');
 
             const Type = mongoose.model('Type', typeSchema);
@@ -118,7 +118,7 @@ module.exports = {
             embed.setDescription(`Successfully added \`${id}\` with miss rate \`${missrate}%\` to the weapon types list!`);
         }
 
-        else if (addType === 'character') {
+        else if (addType === 'Character') {
             let hp = interaction.options.getInteger('hp');
             if (hp === null) {
                 hp = 30;
