@@ -40,7 +40,7 @@ module.exports = {
 
     async execute(interaction) {
 
-        await interaction.deferReply( { ephemeral: true });
+        await interaction.deferReply();
 
         if(interaction.member.voice.channelId === null) {
             await interaction.editReply("You are not connected to a voice channel!");
@@ -93,6 +93,7 @@ module.exports = {
             let dmList = await interaction.guild.roles.fetch("977241924505313310").then(role => {
                 let array = [];
                 role.members.forEach(member => {
+                    if (member.bot) return;
                     array.push(member.id);
                 })
                 return array;
