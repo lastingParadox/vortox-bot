@@ -24,30 +24,14 @@ const commandFolders = fs.readdirSync("./commands");
 	//Logging in the bot to the Discord service
 	await client.login(process.env.CLIENT_TOKEN);
 
-	const list = [
-		"orbin' it up",
-		"Project 4 soon!",
-		"Garrick, more like garlic",
-		"marbilization",
-		"An onion, wow.",
-		"No one out-zizzas the Butt.",
-		"the world is your oyster!",
-		"always. kid. to me.",
-		"i'm all ears.",
-		"u-uh... you're a star!",
-		"plot interference",
-		"your balls"
-	]
-
-	let index = Math.floor(Math.random() * list.length);
+	const list = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\status.json`));
 	const episodeList = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`));
 
-	if (episodeList.episodeThread === "") client.user.setActivity(list[index], {type: 'WATCHING'});
+	if (episodeList.episodeThread === "") client.user.setActivity(list[Math.floor(Math.random() * list.length)], {type: 'WATCHING'});
 	else client.user.setActivity("Final Frontier", {type: 'PLAYING'});
 
 	setInterval(() => {
-		index = Math.floor(Math.random() * list.length);
-		if (episodeList.episodeThread === "") client.user.setActivity(list[index], {type: 'WATCHING'});
+		if (episodeList.episodeThread === "") client.user.setActivity(list[Math.floor(Math.random() * list.length)], {type: 'WATCHING'});
 		else client.user.setActivity("Final Frontier", {type: 'PLAYING'});
 	}, 300000);
 
