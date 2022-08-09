@@ -3,31 +3,43 @@ const { MessageEmbed } = require('discord.js');
 const fs = require('fs');
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName('8ball')
-		.setDescription('Shakes the 8ball!')
+    data: new SlashCommandBuilder()
+        .setName('8ball')
+        .setDescription('Shakes the 8ball!')
         .addStringOption(option =>
             option.setName('question')
                 .setDescription('The question to be asked.')
                 .setRequired(true)),
 
-	async execute(interaction) {
+    async execute(interaction) {
         const question = interaction.options.getString('question');
 
         let ball = fs.readFileSync(process.cwd() + `\\items\\8ball.json`);
         const responses = JSON.parse(ball);
 
-        const choice = Math.floor(Math.random() * responses.length);
-        const response = Math.floor(Math.random() * responses[choice]['responses'].length);
+        let totalChoices = 0;
+        for (const element of responses) {
+            totalChoices += element.responses.length;
+        }
 
-        ball = responses[choice]['responses'][response];
+        let randomNum = Math.floor(Math.random() * totalChoices);
+        let response;
+        for (const element of responses) {
+            randomNum -= element.responses.length;
+
+            if (randomNum <= 0) {
+                response = Math.floor(Math.random() * responses[responses.indexOf(element)]['responses'].length);
+                response = responses[responses.indexOf(element)]['responses'][response];
+                break;
+            }
+        }
 
         const embed = new MessageEmbed()
             .setColor('#FFA500')
             .setTitle(`8ball Response`)
-            .setDescription(`${ball}`)
+            .setDescription(`${response}`)
             .setFooter({ text: `${interaction.member.displayName} asked: "${question}"`})
 
-		await interaction.reply({ embeds: [embed] });
-	},
+        await interaction.reply({ embeds: [embed] });
+    },
 };

@@ -21,8 +21,10 @@
             "Yes but actually yes.",
             "Yo mama says yes.",
             "Yes, but I won't be happy about it.",
+            "Yes, but I won't not be happy about it.",
             "Y35.",
-            "Y Word. (Yes).",
+            "Y Word. (Yes)",
+            "Yigga.",
             "Spell it with me now, Y-E-S.",
             "Y.",
             "Ja.",
@@ -36,21 +38,37 @@
             "Yes, yes yes yes, yeeeeees! YES!!",
             "Yes, but with a caveat decided by the next person.",
             "Yes, but with a caveat decided by the person before you.",
-            "Yes, but with caveats decided by the persons before and after you.",
             "Yes, but with a caveat of your choice.",
             "Yes moment.",
-            "Ґɍ@ (Yes).",
+            "Ґɍ@. (Yes)",
             "Yay.",
             "Yes, and forever again for the rest of the episode.",
             "Yes, and again on your next turn.",
             "Yabumba. (Yes)",
             "I’LL ALLOW IT!",
             "Absolutely.",
+            "Certainly.",
             "Unequivocally yes.",
             "Yes, and it happens at DOUBLE power!",
             "Yes, but it happens at HALF power.",
             "Yes, but the same happens to the next person's character.",
-            "Yes, but the same happens to the person before you's character."
+            "Yes, but the same happens to the previous person's character.",
+            "Yorb? (Yes)",
+            "You're 18, so yeah.",
+            "Sure, why not?",
+            "You bet it happens.",
+            "Hmm... yea.",
+            "YeayeayaYEAYAYAYAYAYAYA!!!",
+            "`if(question) return true;`\n`else return false;",
+            "It's opposite day! No.",
+            "E-yes.",
+            "1. (Yes)",
+            "You only live once... so, yeah.",
+            "Today is the day!",
+            "Lady Luck smiles.",
+            "My horoscope says yes.",
+            "If that's what you want...",
+            "Do you even need to ask? Yes!"
         ]
     },
     {
@@ -77,7 +95,7 @@
             "Nien.",
             "No. (that’s no in Spanish)",
             "Sad to tell you that it does not happen.",
-            "Bro, your action didn’t make it. I’m so sorry. (No).",
+            "Bro, your action didn’t make it. I’m so sorry.",
             "No, no no no, noooooo! NO!!",
             "No, but something that the person before you decides upon happens.",
             "No, but something that the person after you decides upon happens.",
@@ -85,7 +103,11 @@
             "ԗݛ. (No).",
             "No, and never again for the rest of the episode.",
             "Nabumba. (No)",
-            "nope."
+            "nope.",
+            "Norb? (No)",
+            "You're 17, so nah.",
+            "0. (No)",
+            "Uh... no 😬"
         ]
     },
     {
@@ -93,14 +115,18 @@
         "responses": [
             "Reply hazy, ask the DM.",
             "Concentrate and ask the DM.",
-            "Ask your mom.",
             "Only if Bellow would do it.",
             "Only if Dutch would do it.",
+            "Only if Morra would do it.",
+            "Only if Seth would do it.",
+            "Only if Emmett would do it.",
             "Roll a d20 to find out. (1—5 is no, 6—15 is yes, 16—20 is double power.)",
-            "Flip a coin to find out.",
-            "Only if there's an odd number of players.",
-            "Only if there's an even number of players.",
-            "Majority rules! Vote on it!"
+            "Flip a coin to find out. (Heads is yes)",
+            "Majority rules! Vote on it!",
+            "Call (850) 287-8232 and ask them.",
+            "Sing the poopy farty song word-for-word. The others will decide your fate.",
+            "Too easy! Ask a different question and roll again!",
+            "Ask the DM ¯\\_(ツ)_/¯"
         ]
     }
 ]
