@@ -4,11 +4,14 @@ const { Schema } = mongoose;
 let weaponSchema = new Schema( {
     id: { type: String, required: true, unique: true },
     name: String,
-    type: String,
-    damage: String,
     description: String,
+
+    damageType: String,
+    damage: String,
+    missRate: Number,
+
     guildId: String,
-    userId: String
+    author: String
 })
 
 module.exports = { weaponSchema }

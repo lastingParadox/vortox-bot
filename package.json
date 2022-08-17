@@ -1,27 +1,17 @@
 {
-  "name": "vortox",
+  "name": "vortoxbot2",
   "version": "1.0.0",
   "description": "",
-  "main": "src/bot.js",
+  "main": "index.js",
   "scripts": {
-    "test": "node src/bot.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "Zander Preston",
+  "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/builders": "^0.6.0",
-    "@discordjs/rest": "^0.1.0-canary.0",
-    "dice-roller-parser": "^0.1.8",
-    "discord-api-types": "^0.23.1",
-    "discord-fetch-all": "^3.0.2",
-    "discord.js": "^13.6.0",
+    "discord.js": "^14.2.0",
     "dotenv": "^16.0.1",
-    "mongodb": "^4.6.0",
-    "mongoose": "^6.3.3",
-    "node-fetch": "^2.6.7"
-  },
-  "devDependencies": {
-    "eslint": "^8.7.0"
+    "mongoose": "^6.5.2"
   }
 }
