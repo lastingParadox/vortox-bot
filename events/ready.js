@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { ActivityType } = require('discord.js');
+const { EpisodeUtils } = require('../utilities/episodeUtils')
 
 module.exports = {
 	name: 'ready',
@@ -7,6 +8,9 @@ module.exports = {
 	execute(client) {
 		console.log(`Ready! Logged in as ${client.user.tag}`);
 
+		EpisodeUtils.start();
+
+		//Presence updates every five minutes.
 		const list = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\status.json`, 'utf8'));
 
 		let presence = list[Math.floor(Math.random() * list.length)]

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
-const VortoxColor = require('../../utilities/enums')
+const { VortoxColor } = require('../../utilities/enums');
 const fs = require('fs');
 
 module.exports = {

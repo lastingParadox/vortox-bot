@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
 const { DiceRoller, RollInitializeError } = require('vortox-dice-parser');
-const VortoxColor = require('../../utilities/enums')
+const { VortoxColor } = require('../../utilities/enums');
 
 module.exports = {
     data: new SlashCommandBuilder()

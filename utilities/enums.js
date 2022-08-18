@@ -5,4 +5,4 @@ const VortoxColor = {
     MISS: '#E34234'
 }
 
-module.exports = VortoxColor;
+module.exports = { VortoxColor };
