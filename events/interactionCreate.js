@@ -1,9 +1,7 @@
-const {InteractionType} = require("discord-api-types/v10");
-
 module.exports = {
 	name: 'interactionCreate',
 	async execute(interaction, client) {
-		if (interaction.type === InteractionType.ApplicationCommand) return;
+		if (!interaction.isChatInputCommand()) return;
 
 		const command = client.commands.get(interaction.commandName);
 

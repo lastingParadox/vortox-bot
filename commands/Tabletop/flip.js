@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
+const VortoxColor = require('../../utilities/enums')
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,13 +13,15 @@ module.exports = {
         let face;
 
         if (random === 0) face = "Heads";
-        else face = "Tails;"
+        else face = "Tails"
 
         const embed = new EmbedBuilder()
-            .setColor('#FFA500')
+            .setColor(VortoxColor.DEFAULT)
             .setTitle(`Coin Flip`)
             .setDescription(`${face}`)
-            .setFooter(({ text: `${interaction.member.displayName} flipped a coin and got ${face.toLowerCase()}`}));
+            .setFooter({
+                iconURL: interaction.member.displayAvatarURL(),
+                text: `${interaction.member.displayName} flipped a coin and got ${face.toLowerCase()}`});
 
         await interaction.reply({ embeds: [embed] });
     }

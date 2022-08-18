@@ -1,9 +1,16 @@
 require('dotenv').config();
 
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildVoiceStates] });
 const fs = require('fs');
 const mongoose = require('mongoose')
+
+const client = new Client({
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+	]
+});
 
 client.commands = new Collection();
 
@@ -24,8 +31,8 @@ const commandFolders = fs.readdirSync("./commands");
 	//Logging in the bot to the Discord service
 	await client.login(process.env.CLIENT_TOKEN);
 
-	const list = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\status.json`));
-	const episodeList = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`));
+	const list = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\status.json`, 'utf8'));
+	const episodeList = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`, 'utf8'));
 
 	if (episodeList.episodeThread === "") client.user.setActivity(list[Math.floor(Math.random() * list.length)], {type: 'WATCHING'});
 	else client.user.setActivity("Final Frontier", {type: 'PLAYING'});

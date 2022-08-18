@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
+const VortoxColor = require('../../utilities/enums')
 const fs = require('fs');
 
 module.exports = {
@@ -40,11 +41,14 @@ module.exports = {
         }
 
         const embed = new EmbedBuilder()
-            .setColor('#FFA500')
+            .setColor(VortoxColor.DEFAULT)
             .setTitle(`8ball Response`)
             .setDescription(`${response}`)
-            .setFooter(({ text: `${interaction.member.displayName} asked: "${question}`}));
+            .setFooter({
+                iconURL: interaction.member.displayAvatarURL(),
+                text: `${interaction.member.displayName} asked: "${question}"`
+            });
 
         await interaction.reply({ embeds: [embed] });
-    }
-}
+    },
+};
