@@ -31,15 +31,4 @@ const commandFolders = fs.readdirSync("./commands");
 	//Logging in the bot to the Discord service
 	await client.login(process.env.CLIENT_TOKEN);
 
-	const list = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\status.json`, 'utf8'));
-	const episodeList = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`, 'utf8'));
-
-	if (episodeList.episodeThread === "") client.user.setActivity(list[Math.floor(Math.random() * list.length)], {type: 'WATCHING'});
-	else client.user.setActivity("Final Frontier", {type: 'PLAYING'});
-
-	setInterval(() => {
-		if (episodeList.episodeThread === "") client.user.setActivity(list[Math.floor(Math.random() * list.length)], {type: 'WATCHING'});
-		else client.user.setActivity("Final Frontier", {type: 'PLAYING'});
-	}, 300000);
-
 })();

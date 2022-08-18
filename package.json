@@ -7,7 +7,7 @@
     "dotenv": "^16.0.1",
     "discord.js": "^14.2.0",
     "mongoose": "^6.5.2",
-    "vortox-dice-parser": "^1.0.4"
+    "vortox-dice-parser": "^1.0.5"
   },
   "devDependencies": {},
   "scripts": {
