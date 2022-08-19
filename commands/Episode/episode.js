@@ -42,13 +42,15 @@ module.exports = {
                 .setDescription('Adds you to an ongoing episode.')
         )
         .addSubcommand(subcommand =>
+            subcommand.setName('leave')
+                .setDescription('Removes you from an ongoing episode.')
+        )
+        .addSubcommand(subcommand =>
             subcommand.setName('stop')
                 .setDescription('Stops the current episode.')
         ),
 
     async execute(interaction) {
-
-        await interaction.deferReply();
 
         const subcommand = interaction.options.getSubcommand();
         const embed = new EmbedBuilder();
@@ -56,15 +58,15 @@ module.exports = {
         const episodes = EpisodeUtils.episodeArray;
         const currentEpisode = episodes.currentEpisode;
 
-        if ((subcommand === 'stop' || subcommand === 'join') && !EpisodeUtils.isCurrentEpisode()) {
+        if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave') && !EpisodeUtils.isCurrentEpisode()) {
             embed.setColor(VortoxColor.ERROR)
                 .setTitle("Unable to Stop Episode!")
                 .setDescription(`There is no episode currently in progress!`)
                 .setFooter({
                     iconURL: interaction.member.displayAvatarURL(),
-                    text: `${interaction.member.displayName} tried to stop an episode.`
+                    text: `${interaction.member.displayName} tried to do something that's not possible.`
                 });
-            await interaction.editReply({ embeds: [embed], ephemeral: true });
+            await interaction.reply({ embeds: [embed], ephemeral: true });
             return;
         }
 
@@ -78,7 +80,7 @@ module.exports = {
                         iconURL: interaction.member.displayAvatarURL(),
                         text: `${interaction.member.displayName} tried to start an episode.`
                     });
-                await interaction.editReply({ embeds: [embed], ephemeral: true });
+                await interaction.reply({ embeds: [embed], ephemeral: true });
                 return;
             }
 
@@ -112,13 +114,13 @@ module.exports = {
 
             if (interaction.member.voice.channelId !== null) {
                 interaction.member.voice.channel.members.each(async member => {
-                    let temp = {id: member.id, name: member.displayName, messageCount: 0, turn: false};
+                    let temp = {id: member.id, name: member.displayName, messageCount: 0, hasLeft: false, turn: false};
                     users.push(temp);
                     await newThread.members.add(member.id);
                 });
             }
             else {
-                users.push({id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, turn: false});
+                users.push({id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, hasLeft: false, turn: false});
                 await newThread.members.add(interaction.member.id);
             }
 
@@ -138,6 +140,8 @@ module.exports = {
                     iconURL: interaction.member.displayAvatarURL(),
                     text: `${interaction.member.displayName} started an episode.`
                 });
+
+            await interaction.reply({ embeds: [embed] })
         }
         else if (subcommand === 'stop') {
 
@@ -168,9 +172,8 @@ module.exports = {
                     text: `${interaction.member.displayName} stopped an episode.`
                 });
 
-            await interaction.editReply({ embeds: [embed] });
+            await interaction.reply({ embeds: [embed] });
             await thread.setArchived(true);
-            return;
         }
         else if (subcommand === 'join') {
             const thread = interaction.guild.channels.cache.get(currentEpisode.episodeThread);
@@ -179,6 +182,7 @@ module.exports = {
 
             for (let user of currentEpisode.episodeUsers) {
                 if (user.id === interaction.member.id) {
+                    user.hasLeft = false;
                     exist = true;
                     break;
                 }
@@ -192,8 +196,55 @@ module.exports = {
             await thread.members.add(interaction.member.id);
 
             EpisodeUtils.saveNew(episodes);
-        }
 
-        await interaction.editReply({ embeds: [embed] });
+            embed.setColor(VortoxColor.SUCCESS)
+                .setTitle(`Joining Episode`)
+                .setDescription(`Added you to Episode \`${thread.name}\`!`)
+                .setFooter({
+                    iconURL: interaction.member.displayAvatarURL(),
+                    text: `${interaction.member.displayName} joined an episode.`
+                });
+
+            await interaction.reply({ embeds: [embed], ephemeral: true });
+        }
+        else if (subcommand === 'leave') {
+            const thread = interaction.guild.channels.cache.get(currentEpisode.episodeThread);
+            let exist = true;
+
+            for (let user of currentEpisode.episodeUsers) {
+                if (user.id === interaction.member.id) {
+                    user.hasLeft = true;
+                    break;
+                }
+                else
+                    exist = false;
+            }
+
+            if (!exist) {
+                embed.setColor(VortoxColor.ERROR)
+                    .setTitle(`Leaving Episode`)
+                    .setDescription(`You are not part of an ongoing episode!`)
+                    .setFooter({
+                        iconURL: interaction.member.displayAvatarURL(),
+                        text: `${interaction.member.displayName} tried to leave an episode.`
+                    });
+                await interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+            else {
+                await thread.members.remove(interaction.member.id);
+
+                EpisodeUtils.saveNew(episodes);
+
+                embed.setColor(VortoxColor.SUCCESS)
+                    .setTitle(`Leaving Episode`)
+                    .setDescription(`Successfully removed you from \`${thread.name}\`.`)
+                    .setFooter({
+                        iconURL: interaction.member.displayAvatarURL(),
+                        text: `${interaction.member.displayName} left an episode.`
+                    });
+
+                await interaction.reply({ embeds: [embed], ephemeral: true });
+            }
+        }
     },
 };
