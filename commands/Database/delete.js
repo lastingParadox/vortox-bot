@@ -64,7 +64,7 @@ module.exports = {
         if (!temp) {
             console.log(`No document with id matching ${id} found in the database.`)
             embedFail.setTitle(`Deleting \`${id}\` Failed!`)
-                .setDescription(`${id} does not exist!`)
+                .setDescription(`\`${id}\` does not exist!`)
             interaction.reply({ embeds: [embedFail] });
             return;
         }
@@ -83,7 +83,7 @@ module.exports = {
             .then(() => {
                 interaction.channel.awaitMessages({ filter: filter, max: 1, time: 180000, errors: ['time'] })
                     .then(collected => {
-                        if(collected.first().content === id) {
+                        if(collected.first().content.toLowerCase() === id) {
                             temp.quotes.forEach(quote => {
                                 let tempLocation = locationArray.find(location => location.id === quote.location);
                                 tempLocation.count--;

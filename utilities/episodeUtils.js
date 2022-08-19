@@ -9,25 +9,33 @@ class EpisodeUtils {
 
         fs.watch(process.cwd() + `\\items\\episodes.json`, (eventType) => {
             if (eventType === "change") {
-                EpisodeUtils.episodeArray = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`, 'utf8'));
+                try {
+                    EpisodeUtils.episodeArray = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`, 'utf8'));
+                } catch (e) {
+                    console.log("Unable to parse episodes.json.", e);
+                }
+            }
+        })
+    }
+
+    static save() {
+        fs.writeFileSync(process.cwd() + `\\items\\episodes.json`, JSON.stringify(EpisodeUtils.episodeArray, null, 2), async err => {
+            if (err) {
+                console.log(`Error writing to episodes.json.`, err);
+            }
+        })
+    }
+
+    static saveNew(episodes) {
+        fs.writeFileSync(process.cwd() + `\\items\\episodes.json`, JSON.stringify(episodes, null, 2), async err => {
+            if (err) {
+                console.log(`Error writing new instance to episodes.json.`, err);
             }
         })
     }
 
     static isCurrentEpisode() {
-        return (EpisodeUtils.episodeArray.episodeThread !== "")
-    }
-
-    static getEpisodeThread() {
-        return EpisodeUtils.episodeArray.episodeThread;
-    }
-
-    static getCampaignName() {
-        return EpisodeUtils.episodeArray.campaignName;
-    }
-
-    static getEpisodeUsers() {
-        return EpisodeUtils.episodeArray.episodeUsers;
+        return (EpisodeUtils.episodeArray.currentEpisode.episodeThread !== "");
     }
 
 }

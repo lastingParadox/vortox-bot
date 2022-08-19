@@ -1,11 +1,13 @@
 {
   "campaignName": "",
-
   "mainEpisodeCount": 0,
   "sideEpisodeCount": 0,
-
-  "episodeThread": "1010040082436202508",
-  "episodeUsers": [],
-
+  "currentEpisode": {
+    "episodeThread": "",
+    "episodeName": "",
+    "episodeUsers": [],
+    "messageCount": 0,
+    "episodeLength": "N/A"
+  },
   "pastEpisodes": []
 }

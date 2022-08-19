@@ -1,11 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
 
 const mongoose = require("mongoose");
 const { characterSchema } = require("../../models/characters");
 const { weaponSchema } = require("../../models/weapons");
-
-const { VortoxColor } = require('../../utilities/enums');
 
 module.exports = {
     data: new SlashCommandBuilder()
