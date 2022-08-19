@@ -9,7 +9,6 @@ class EpisodeUtils {
 
         fs.watch(process.cwd() + `\\items\\episodes.json`, (eventType) => {
             if (eventType === "change") {
-                console.log("episodes.json changed!")
                 EpisodeUtils.episodeArray = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`, 'utf8'));
             }
         })
@@ -25,6 +24,10 @@ class EpisodeUtils {
 
     static getCampaignName() {
         return EpisodeUtils.episodeArray.campaignName;
+    }
+
+    static getEpisodeUsers() {
+        return EpisodeUtils.episodeArray.episodeUsers;
     }
 
 }

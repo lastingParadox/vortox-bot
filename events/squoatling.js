@@ -19,7 +19,6 @@ function syllableCounter(word) {
 
 module.exports = {
     name: 'messageCreate',
-
     execute(message) {
         if (message.author.bot) return;
         if (message.content.indexOf(' ') > -1 || message.content.toLowerCase().indexOf("squ") !== 0 || message.content.toLowerCase() === "squoat") return;

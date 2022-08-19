@@ -30,9 +30,7 @@ let characterSchema = new Schema( {
         author: String
     },
 
-    locations: [{
-        location: String
-    }],
+    locations: [String],
 
     quotes: [{
         quote: String,

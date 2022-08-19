@@ -112,8 +112,8 @@ module.exports = {
             } catch (err) {
                 console.log(err);
                 embed.setColor(VortoxColor.ERROR)
-                    .setTitle(`Adding ${id} Failed!`)
-                    .setDescription(`Character id ${id} already exists!`)
+                    .setTitle(`Adding \`${id}\` Failed!`)
+                    .setDescription(`Character id \`${id}\` already exists!`)
                     .setFooter({
                         iconURL: interaction.member.displayAvatarURL(),
                         text: `${interaction.member.displayName} tried to add character ${id} to the database.`
@@ -123,11 +123,11 @@ module.exports = {
             }
 
             embed.setColor(VortoxColor.SUCCESS)
-                .setTitle(`Adding ${id} Succeeded!`)
-                .setDescription(`Character id ${id} added to the database!`)
+                .setTitle(`Adding \`${id}\` Succeeded!`)
+                .setDescription(`Character id \`${id}\` added to the database!`)
                 .setFooter({
                     iconURL: interaction.member.displayAvatarURL(),
-                    text: `${interaction.member.displayName} added character \`${id}\` to the database.`
+                    text: `${interaction.member.displayName} added character ${id} to the database.`
                 });
 
             await interaction.reply({ embeds: [embed] });
@@ -144,7 +144,7 @@ module.exports = {
             } catch (error) {
                 if (error instanceof RollInitializeError) {
                     embed.setColor(VortoxColor.ERROR)
-                        .setTitle(`Adding ${id} Failed`)
+                        .setTitle(`Adding \`${id}\` Failed`)
                         .setDescription("Dice syntax is invalid!")
                         .setFooter({
                             iconURL: interaction.member.displayAvatarURL(),
@@ -173,8 +173,8 @@ module.exports = {
             } catch (err) {
                 console.log(err);
                 embed.setColor(VortoxColor.ERROR)
-                    .setTitle(`Adding ${id} Failed!`)
-                    .setDescription(`Weapon id ${id} already exists!`)
+                    .setTitle(`Adding \`${id}\` Failed!`)
+                    .setDescription(`Weapon id \`${id}\` already exists!`)
                     .setFooter({
                         iconURL: interaction.member.displayAvatarURL(),
                         text: `${interaction.member.displayName} tried to add weapon ${id} to the database.`
@@ -184,7 +184,7 @@ module.exports = {
             }
 
             embed.setColor(VortoxColor.SUCCESS)
-                .setTitle(`Adding ${id} Succeeded!`)
+                .setTitle(`Adding \`${id}\` Succeeded!`)
                 .setDescription(`Weapon id \`${id}\` added to the database!`)
                 .setFooter({
                     iconURL: interaction.member.displayAvatarURL(),
