@@ -20,6 +20,11 @@ function sortEpisodeUsers(a, b) {
     const nameA = a.name.toLowerCase();
     const nameB = b.name.toLowerCase();
 
+    if (nameA === "dm")
+        return 1;
+    else if (nameB === "dm")
+        return -1;
+
     if (nameA < nameB) return -1;
     if (nameA > nameB) return 1;
     return 0;
@@ -114,15 +119,19 @@ module.exports = {
 
             if (interaction.member.voice.channelId !== null) {
                 interaction.member.voice.channel.members.each(async member => {
-                    let temp = {id: member.id, name: member.displayName, messageCount: 0, hasLeft: false, turn: false};
+                    let temp = { id: member.id, name: member.displayName, messageCount: 0, hasLeft: false, turn: false };
                     users.push(temp);
                     await newThread.members.add(member.id);
                 });
             }
             else {
-                users.push({id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, hasLeft: false, turn: false});
+                users.push({ id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, hasLeft: false, turn: false});
                 await newThread.members.add(interaction.member.id);
             }
+
+            let dmRole = await interaction.guild.roles.cache.find(role => role.name === "DM");
+
+            users.push(({ id: "DM", role: dmRole.id, name: "DM", turn: false }));
 
             users.sort(sortEpisodeUsers);
 
@@ -158,6 +167,7 @@ module.exports = {
                 "episodeThread": "",
                 "episodeName": "",
                 "episodeUsers": [],
+                "turnCount": 1,
                 "messageCount": 0,
                 "episodeLength": "N/A"
             };
@@ -189,7 +199,7 @@ module.exports = {
             }
 
             if (!exist) {
-                currentEpisode.episodeUsers.push({id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, turn: false});
+                currentEpisode.episodeUsers.push({id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, hasLeft: false, turn: false});
                 currentEpisode.episodeUsers.sort(sortEpisodeUsers);
             }
 

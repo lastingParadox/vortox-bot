@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const { characterSchema } = require("../../models/characters");
 const { weaponSchema } = require("../../models/weapons");
 
-const { DiceRoller, RollInitializeError } = require("vortox-dice-parser");
+const { DiceRoller, RollInitializeError, InfinityError } = require("vortox-dice-parser");
 const { VortoxColor } = require('../../utilities/enums');
 
 
@@ -64,7 +64,7 @@ module.exports = {
         ),
 
     async execute(interaction) {
-        const id = interaction.options.getString('char_id');
+        const id = interaction.options.getString('char_id').toLowerCase();
         const damage = interaction.options.getSubcommand();
         const embed = new EmbedBuilder()
             .setTitle(`Damaging \`${id}\``);
@@ -89,7 +89,7 @@ module.exports = {
         embed.setTitle(`Damaging ${target.name}`)
 
         if (damage === 'weapon') {
-            const weaponId = interaction.options.getString('weapon_id');
+            const weaponId = interaction.options.getString('weapon_id').toLowerCase();
             let multiplier = interaction.options.getInteger('multiplier');
 
             if (multiplier === null)
@@ -162,7 +162,7 @@ module.exports = {
             try {
                 roller = new DiceRoller(rollExpression);
             } catch (err) {
-                if (err instanceof RollInitializeError) {
+                if (err instanceof RollInitializeError || err instanceof InfinityError) {
                     embed.setColor(VortoxColor.ERROR)
                         .setDescription(`Invalid dice syntax in expression \`${rollExpression}\`.`)
                         .setFooter({
@@ -176,7 +176,7 @@ module.exports = {
 
             totalDamage = roller.getTotal();
 
-            if (target.game.resistances[damageType] > 0) {
+            if (target.game.resistances[damageType] > 0 && totalDamage > 0) {
                 totalDamage = Math.floor(totalDamage - (totalDamage * (target.game.resistances[damageType] / 100)));
             }
 
@@ -184,14 +184,26 @@ module.exports = {
 
             target.save();
 
-            embed.setColor(VortoxColor.SUCCESS)
-                .setDescription(`Rolling \`${rollExpression}\`...\n` +
-                    `${target.name} is hit for ${totalDamage} damage!\n` +
-                    `${target.name} now has \`(${target.game.hp}/${target.game.maxHp})\` hp.`)
-                .setFooter({
-                    iconURL: interaction.member.displayAvatarURL(),
-                    text: `${interaction.member.displayName} damaged ${target.name}.`
-                });
+            if (totalDamage < 0) {
+                embed.setColor(VortoxColor.SUCCESS)
+                    .setDescription(`Rolling \`${rollExpression}\`...\n` +
+                        `${target.name} is healed for ${totalDamage} damage!\n` +
+                        `${target.name} now has \`(${target.game.hp}/${target.game.maxHp})\` hp.`)
+                    .setFooter({
+                        iconURL: interaction.member.displayAvatarURL(),
+                        text: `${interaction.member.displayName} healed ${target.name}.`
+                    });
+            }
+            else {
+                embed.setColor(VortoxColor.SUCCESS)
+                    .setDescription(`Rolling \`${rollExpression}\`...\n` +
+                        `${target.name} is hit for ${totalDamage} damage!\n` +
+                        `${target.name} now has \`(${target.game.hp}/${target.game.maxHp})\` hp.`)
+                    .setFooter({
+                        iconURL: interaction.member.displayAvatarURL(),
+                        text: `${interaction.member.displayName} damaged ${target.name}.`
+                    });
+            }
         }
 
         await interaction.reply({ embeds: [embed] });

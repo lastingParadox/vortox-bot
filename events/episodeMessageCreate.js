@@ -1,8 +1,8 @@
-const {EpisodeUtils} = require("../utilities/episodeUtils");
+const { EpisodeUtils } = require("../utilities/episodeUtils");
 module.exports = {
     name: 'messageCreate',
     execute(message) {
-        if (EpisodeUtils.isCurrentEpisode() === false || message.channel.id !== EpisodeUtils.episodeArray.currentEpisode.episodeThread)
+        if (EpisodeUtils.isCurrentEpisode() === false || message.channel.id !== EpisodeUtils.episodeArray.currentEpisode.episodeThread || message.author.bot)
             return;
 
         EpisodeUtils.episodeArray.currentEpisode.messageCount += 1;

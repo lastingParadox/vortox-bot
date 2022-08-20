@@ -12,11 +12,25 @@ module.exports = {
         }
 
         const currentEpisode = EpisodeUtils.episodeArray.currentEpisode;
-        const user = currentEpisode.episodeUsers.find(x => x.id === interaction.member.id);
-        if (!user || user.turn === false) return;
+
+        const user = currentEpisode.episodeUsers.find(x => x.turn === true);
+
+        if (user.id === "DM") {
+            if (interaction.member.roles.cache.find(role => role.id === user.role) === null)
+                return;
+            currentEpisode.turnCount++;
+        }
+        else if (user.id !== interaction.member.id) return;
 
         user.turn = false;
-        currentEpisode.episodeUsers[(currentEpisode.episodeUsers.indexOf(user) + 1) % currentEpisode.episodeUsers.length].turn = true;
+
+        for (let i = 1; i < currentEpisode.episodeUsers.length; i++) {
+            let temp = currentEpisode.episodeUsers[(currentEpisode.episodeUsers.indexOf(user) + i) % currentEpisode.episodeUsers.length]
+            if (temp.hasLeft !== true) {
+                temp.turn = true;
+                break;
+            }
+        }
 
         EpisodeUtils.save();
     },

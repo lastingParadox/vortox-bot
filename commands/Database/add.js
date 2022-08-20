@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { DiceRoller, RollInitializeError } = require('vortox-dice-parser');
+const { DiceRoller, RollInitializeError, InfinityError} = require('vortox-dice-parser');
 const { EmbedBuilder } = require('discord.js');
 
 const mongoose = require("mongoose");
@@ -142,7 +142,7 @@ module.exports = {
             try {
                 new DiceRoller(damage);
             } catch (error) {
-                if (error instanceof RollInitializeError) {
+                if (error instanceof RollInitializeError || error instanceof InfinityError) {
                     embed.setColor(VortoxColor.ERROR)
                         .setTitle(`Adding \`${id}\` Failed`)
                         .setDescription("Dice syntax is invalid!")
