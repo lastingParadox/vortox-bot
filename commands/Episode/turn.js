@@ -57,7 +57,7 @@ module.exports = {
 
             embed.setColor(VortoxColor.DEFAULT)
                 .setTitle("Skipping Turn")
-                .setDescription(`Skippped <@${user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
+                .setDescription(`Skipped <@${user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
                 .setFooter({
                     iconURL: interaction.member.displayAvatarURL(),
                     text: `${interaction.member.displayName} skipped <@${newUser.id}>'s turn.`

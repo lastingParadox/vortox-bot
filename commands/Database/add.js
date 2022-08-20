@@ -95,7 +95,7 @@ module.exports = {
                 },
 
                 meta: {
-                    image: "",
+                    image: "https://polybit-apps.s3.amazonaws.com/stdlib/users/discord/profile/image.png",
                     color: VortoxColor.DEFAULT,
                     guildId: interaction.guildId,
                     author: interaction.member.id
