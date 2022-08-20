@@ -1,12 +1,11 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
-
 const mongoose = require("mongoose");
 const { characterSchema } = require("../../models/characters");
 const { weaponSchema } = require("../../models/weapons");
 
-const { DiceRoller, RollInitializeError, InfinityError } = require("vortox-dice-parser");
+const { DiceRoller} = require("vortox-dice-parser");
 const { VortoxColor } = require('../../utilities/enums');
+const { VortoxEmbed } = require("../../utilities/embeds");
 
 
 module.exports = {
@@ -17,8 +16,8 @@ module.exports = {
             subcommand.setName('weapon')
                 .setDescription('Damages a character with the provided weapon.')
                 .addStringOption(option =>
-                    option.setName('char_id')
-                        .setDescription('The character\'s id. Required.')
+                    option.setName('target_id')
+                        .setDescription('The target character\'s id. Required.')
                         .setRequired(true)
                 )
                 .addStringOption(option =>
@@ -36,8 +35,8 @@ module.exports = {
             subcommand.setName('roll')
                 .setDescription('Damages a character with the provided dice expression.')
                 .addStringOption(option =>
-                    option.setName('char_id')
-                        .setDescription('The character\'s id. Required.')
+                    option.setName('target_id')
+                        .setDescription('The target character\'s id. Required.')
                         .setRequired(true)
                 )
                 .addStringOption(option =>
@@ -64,148 +63,113 @@ module.exports = {
         ),
 
     async execute(interaction) {
-        const id = interaction.options.getString('char_id').toLowerCase();
+        const targetId = interaction.options.getString("target_id");
         const damage = interaction.options.getSubcommand();
-        const embed = new EmbedBuilder()
-            .setTitle(`Damaging \`${id}\``);
-
-        let roller
-        let totalDamage;
         const Character = mongoose.model("Characters", characterSchema);
 
-        const target = await Character.findOne({ id: id });
+        let roller;
+        let combatLog = "";
+        let totalDamage = 0;
+        let damageType;
+
+        let target = await Character.findOne({ id: targetId });
 
         if (!target) {
-            embed.setColor(VortoxColor.ERROR)
-                .setDescription(`Character \`${id}\` does not exist!`)
-                .setFooter({
-                    iconURL: interaction.member.displayAvatarURL(),
-                    text: `${interaction.member.displayName} tried to damage ${id}.`
-                });
+            const embed = new VortoxEmbed(VortoxColor.ERROR, `Error Damaging \`${targetId}\``, "tried to damage someone.", interaction.member);
+            embed.setDescription(`Character \`${targetId}\` does not exist!`)
             await interaction.reply({ embeds: [embed], ephemeral: true });
             return;
         }
 
-        embed.setTitle(`Damaging ${target.name}`)
-
         if (damage === 'weapon') {
-            const weaponId = interaction.options.getString('weapon_id').toLowerCase();
-            let multiplier = interaction.options.getInteger('multiplier');
+            const weaponId = interaction.options.getString("weapon_id");
+            let multiplier = interaction.options.getInteger("multiplier");
 
-            if (multiplier === null)
-                multiplier = 1;
-
-            const Weapon = mongoose.model("Weapons", weaponSchema)
+            const Weapon = mongoose.model("Weapons", weaponSchema);
             const weapon = await Weapon.findOne({ id: weaponId });
 
             if (!weapon) {
-                embed.setColor(VortoxColor.ERROR)
-                    .setDescription(`Weapon \`${id}\` does not exist!`)
-                    .setFooter({
-                        iconURL: interaction.member.displayAvatarURL(),
-                        text: `${interaction.member.displayName} tried to damage ${target.name}.`
-                    });
+                const embed = new VortoxEmbed(VortoxColor.ERROR, `Error Damaging ${target.name}`, `tried to damage ${target.name}.`, interaction.member);
+                embed.setDescription(`Weapon \`${weaponId}\` does not exist!`)
                 await interaction.reply({ embeds: [embed], ephemeral: true });
                 return;
             }
 
-            const random = Math.floor(Math.random() * 100) + 1;
+            damageType = weapon.damageType;
+            combatLog += `Rolling for ${weapon.name} accuracy...\n`;
+            const random = Math.floor(Math.random() * 100);
+            combatLog += `Rolled a \`${random}\`!\n${weapon.name}'s miss rate is \`${weapon.missRate}%\`.\n`;
 
             if (random <= weapon.missRate) {
-                embed.setColor(VortoxColor.MISS)
-                    .setDescription(`Rolling for ${weapon.name} accuracy...\n` +
-                    `Rolled a \`${random}\`!\n` +
-                    `${weapon.name}'s miss rate is \`${weapon.missRate}%\`.\n` +
-                    `The attack misses!`)
-                    .setFooter({
-                        iconURL: interaction.member.displayAvatarURL(),
-                        text: `${interaction.member.displayName} tried to damage ${target.name}.`
-                    });
-                await interaction.reply({ embeds: [embed], ephemeral: false });
+                combatLog += `The attack misses!`;
+                const embed = new VortoxEmbed(VortoxColor.MISS, `Attack Against ${target.name} Missed!`, `missed while attacking ${target.name}.`, interaction.member);
+                embed.setDescription(combatLog);
+                await interaction.reply({ embeds: [embed] });
                 return;
             }
 
-            if (multiplier !== 1) {
-                for (let i = 0; i < multiplier; i++) {
-                    let temp = new DiceRoller(weapon.damage);
-                    totalDamage += temp.getTotal();
-                }
+            if (multiplier === null) multiplier = 1;
+
+            for (let i = 0; i < multiplier; i++) {
+                roller = new DiceRoller(weapon.damage)
+                totalDamage += roller.getTotal();
             }
-            else {
-                roller = new DiceRoller(weapon.damage);
-                totalDamage = roller.getTotal();
-            }
-
-            if (target.game.resistances[weapon.damageType] > 0) {
-                totalDamage = Math.floor(totalDamage - (totalDamage * (target.game.resistances[weapon.damageType] / 100)));
-            }
-
-            target.game.hp -= totalDamage;
-
-            target.save();
-
-            embed.setColor(VortoxColor.SUCCESS)
-                .setDescription(`Rolling for ${weapon.name} accuracy...\n` +
-                    `Rolled a \`${random}\`!\n` +
-                    `${weapon.name}'s miss rate is \`${weapon.missRate}%\`.\n` +
-                    `The attack hits for ${totalDamage} damage!\n` +
-                    `${target.name} now has \`(${target.game.hp}/${target.game.maxHp})\` hp.`)
-                .setFooter({
-                    iconURL: interaction.member.displayAvatarURL(),
-                    text: `${interaction.member.displayName} damaged ${target.name}.`
-                });
         }
         else {
             const rollExpression = interaction.options.getString('expression');
-            const damageType = interaction.options.getString('damage_type');
+            damageType = interaction.options.getString('damage_type');
+
+            combatLog += `Rolling \`${rollExpression}\`...\n`;
 
             try {
                 roller = new DiceRoller(rollExpression);
-            } catch (err) {
-                if (err instanceof RollInitializeError || err instanceof InfinityError) {
-                    embed.setColor(VortoxColor.ERROR)
-                        .setDescription(`Invalid dice syntax in expression \`${rollExpression}\`.`)
-                        .setFooter({
-                            iconURL: interaction.member.displayAvatarURL(),
-                            text: `${interaction.member.displayName} tried to damage ${target.name}.`
-                        });
-                    await interaction.reply({ embeds: [embed], ephemeral: true });
-                    return;
-                }
+            } catch (error) {
+                const embed = new VortoxEmbed(VortoxColor.ERROR, `Error Damaging ${target.name}`, `tried to damage ${target.name}.`, interaction.member);
+                embed.setDescription(`Invalid dice syntax in expression \`${rollExpression}\`.`);
+                await interaction.reply({ embeds: [embed], ephemeral: true });
             }
 
             totalDamage = roller.getTotal();
-
-            if (target.game.resistances[damageType] > 0 && totalDamage > 0) {
-                totalDamage = Math.floor(totalDamage - (totalDamage * (target.game.resistances[damageType] / 100)));
-            }
-
-            target.game.hp -= totalDamage;
-
-            target.save();
-
-            if (totalDamage < 0) {
-                embed.setColor(VortoxColor.SUCCESS)
-                    .setDescription(`Rolling \`${rollExpression}\`...\n` +
-                        `${target.name} is healed for ${totalDamage} damage!\n` +
-                        `${target.name} now has \`(${target.game.hp}/${target.game.maxHp})\` hp.`)
-                    .setFooter({
-                        iconURL: interaction.member.displayAvatarURL(),
-                        text: `${interaction.member.displayName} healed ${target.name}.`
-                    });
-            }
-            else {
-                embed.setColor(VortoxColor.SUCCESS)
-                    .setDescription(`Rolling \`${rollExpression}\`...\n` +
-                        `${target.name} is hit for ${totalDamage} damage!\n` +
-                        `${target.name} now has \`(${target.game.hp}/${target.game.maxHp})\` hp.`)
-                    .setFooter({
-                        iconURL: interaction.member.displayAvatarURL(),
-                        text: `${interaction.member.displayName} damaged ${target.name}.`
-                    });
-            }
         }
 
-        await interaction.reply({ embeds: [embed] });
-    },
+        const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Damaging ${target.name}`, `damaged ${target.name}.`, interaction.member)
+
+        if (totalDamage >= 0)
+            combatLog += `The attack hits for \`${totalDamage}\` damage!\n`;
+        else {
+            successEmbed.setTitle(`Healing ${target.name}`).setFooter(`healed ${target.name}.`);
+            combatLog += `${target.name} is healed for \`${Math.abs(totalDamage)}\` damage!\n`;
+        }
+
+        if (target.game.resistances[damageType] > 0 && totalDamage > 0) {
+            totalDamage = Math.ceil(totalDamage - (totalDamage * (target.game.resistances[damageType] / 100)));
+            combatLog += `${target.name} has a \`${target.game.resistances[damageType]}%\` \`${damageType}\` resistance!\n`;
+        }
+
+        if (target.game.shield > 0) {
+            if (totalDamage > target.game.shield) {
+                combatLog += `${target.name}'s shield took \`${target.game.shield}\` damage and broke.\n`;
+                totalDamage -= target.game.shield;
+                target.game.shield = 0;
+                combatLog += `${target.name} takes \`${totalDamage}\` damage!\n`
+                target.game.hp -= totalDamage;
+            }
+            else {
+                combatLog += `${target.name}'s shield took \`${target.game.shield - totalDamage}\` damage, saving them.\n`;
+                combatLog += `${target.name}'s shield has \`${target.game.shield - totalDamage}/${target.game.shield}\` health.\n`
+                target.game.shield -= totalDamage;
+            }
+        }
+        else {
+            combatLog += `${target.name} takes \`${totalDamage}\` damage.\n`;
+            target.game.hp -= totalDamage;
+        }
+
+        target.save();
+
+        combatLog += `${target.name} has \`(${target.game.hp}/${target.game.maxHp})\` hp.`;
+        successEmbed.setDescription(combatLog);
+
+        await interaction.reply({ embeds: [successEmbed] });
+    }
 };

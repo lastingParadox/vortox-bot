@@ -28,9 +28,11 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setColor(VortoxColor.DEFAULT)
             .setTitle(`${random}`)
+            .setDescription(`The list of options: ${itemString}`)
             .setFooter({
                 iconURL: interaction.member.displayAvatarURL(),
-                text: `The list of options: ${itemString}`
+                text: `${interaction.member.displayName} wanted a choice.`
+
             });
 
         await interaction.reply({ embeds: [embed] });
