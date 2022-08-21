@@ -36,13 +36,19 @@ module.exports = {
         const user = userList.find(x => x.turn === true);
 
         embed.setColor(VortoxColor.DEFAULT)
-            .setTitle("Episode Turn")
-            .setDescription(`It's <@${user.id}>'s turn!`)
-            .setFooter({
+            .setTitle("Episode Turn");
+
+        if (user.id === "DM") {
+            embed.setDescription(`It's the DM's turn!`);
+        }
+        else {
+            embed.setDescription(`It's <@${user.id}>'s turn!`)
+        }
+
+            embed.setFooter({
                 iconURL: interaction.member.displayAvatarURL(),
                 text: `${interaction.member.displayName} asked who has the turn currently.`
             });
-
         }
 
         else {
