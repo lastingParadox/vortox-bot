@@ -15,7 +15,7 @@ module.exports = {
                 .setName('add')
                 .setDescription('Adds a weapon to the database.')
                 .addStringOption(option =>
-                    option.setName('id')
+                    option.setName('weapon_id')
                         .setDescription('The weapon\'s id to be used in commands.')
                         .setRequired(true)
                 )
@@ -33,6 +33,7 @@ module.exports = {
                             { name: 'Freeze', value: 'freeze' },
                             { name: 'Shock', value: 'shock' },
                             { name: 'Biological', value: 'biological' },
+                            { name: 'Incorporeal', value: 'incorporeal' }
                         )
                 )
                 .addStringOption(option =>
@@ -51,8 +52,8 @@ module.exports = {
                 .setName('delete')
                 .setDescription('Removes a weapon from the database.')
                 .addStringOption(option =>
-                    option.setName('id')
-                        .setDescription('The weapon\'s id to be removed.')
+                    option.setName('weapon_id')
+                        .setDescription('The removed weapon\'s id.')
                         .setRequired(true)
                 )
         )
@@ -61,16 +62,16 @@ module.exports = {
                 .setName('info')
                 .setDescription('Shows a weapon\'s details.')
                 .addStringOption(option =>
-                    option.setName('id')
-                        .setDescription('The weapon\'s id to be removed.')
+                    option.setName('weapon_id')
+                        .setDescription('The retrieved weapon\'s id.')
                         .setRequired(true)
                 )
         ),
 
     async execute(interaction) {
-        const id = interaction.options.getString('id').toLowerCase();
+        const id = interaction.options.getString('weapon_id').toLowerCase();
         const subcommand = interaction.options.getSubcommand();
-        const Weapon = mongoose.model('Weapon', weaponSchema);
+        const Weapon = mongoose.model('Weapons', weaponSchema);
 
         if (subcommand === "add") {
             const damage = interaction.options.getString('damage');
@@ -153,6 +154,7 @@ module.exports = {
                     interaction.channel.awaitMessages({ filter: filter, max: 1, time: 180000, errors: ['time'] })
                         .then(async collected => {
                             if (collected.first().content.toLowerCase() === id) {
+                                console.log(`Removed weapon ${id} from the database.`)
                                 await Weapon.deleteOne({id: id});
                                 await collected.first().delete();
                                 await interaction.editReply({ embeds: [embedSuccess] });
@@ -174,13 +176,14 @@ module.exports = {
                 return;
             }
 
-            const embed = new VortoxEmbed(VortoxColor.DEFAULT, `${weapon.name}`, `got information for weapon ${id}.`, interaction.member);
+            const embed = new VortoxEmbed(VortoxColor.DEFAULT, `${weapon.name}`, `got information for ${weapon.name}.`, interaction.member);
             embed.setDescription(weapon.description)
                     .addFields([
                         { name: "ID", value: `\`${weapon.id}\``, inline: true },
                         { name: "Damage Type", value: `\`${weapon.damageType}\``, inline: true },
                         { name: "Damage Roll", value: `\`${weapon.damage}\``, inline: true },
-                        { name: "Number of Uses", value: `${weapon.timesUsed}`, inline: true }
+                        { name: "Number of Uses", value: `${weapon.timesUsed}`, inline: true },
+                        { name: "Author", value: `<@${weapon.author}>`, inline: false },
                     ])
 
             await interaction.reply({ embeds: [embed] });

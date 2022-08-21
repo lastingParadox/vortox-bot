@@ -58,6 +58,7 @@ module.exports = {
                             { name: 'Freeze', value: 'freeze' },
                             { name: 'Shock', value: 'shock' },
                             { name: 'Biological', value: 'biological' },
+                            { name: 'Incorporeal', value: 'incorporeal' }
                         )
                 )
         ),
@@ -98,7 +99,10 @@ module.exports = {
 
             weaponName = weapon.name;
             damageType = weapon.damageType;
-            const random = Math.floor(Math.random() * 100);
+            weapon.timesUsed++;
+            await weapon.save();
+
+            const random = Math.floor(Math.random() * 100) + 1;
 
             if (random <= weapon.missRate) {
                 combatLog += `Rolling for ${weapon.name} accuracy...\n`;
@@ -139,9 +143,18 @@ module.exports = {
                 const embed = new VortoxEmbed(VortoxColor.ERROR, `Error Damaging ${target.name}`, `tried to damage ${target.name}.`, interaction.member);
                 embed.setDescription(`Invalid dice syntax in expression \`${rollExpression}\`.`);
                 await interaction.reply({ embeds: [embed], ephemeral: true });
+                return;
             }
 
             totalDamage = roller.getTotal();
+        }
+
+        if (!target.incorporeal && damageType !== 'incorporeal' && totalDamage >= 0) {
+            combatLog += `${target.name} is \`incorporeal\`!\n${weaponName} misses, dealing no damage to ${target.name}.`
+            const ghostEmbed = new VortoxEmbed(VortoxColor.MISS, `Damaging ${target.name}`, `tried to damage ${target.name}.`, interaction.member);
+            ghostEmbed.setDescription(combatLog);
+            await interaction.reply( { embeds: [ghostEmbed] });
+            return;
         }
 
         const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Damaging ${target.name}`, `damaged ${target.name}.`, interaction.member)
@@ -184,7 +197,7 @@ module.exports = {
             target.game.hp -= totalDamage;
         }
 
-        target.save();
+        await target.save();
 
         combatLog += `${target.name} has \`(${target.game.hp}/${target.game.maxHp})\` hp.`;
         successEmbed.setDescription(combatLog);

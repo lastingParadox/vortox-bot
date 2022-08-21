@@ -10,6 +10,7 @@ let characterSchema = new Schema( {
         hp: Number,
         maxHp: Number,
         shield: Number,
+        incorporeal: Boolean,
         resistances: {
             sharp: Number,
             blunt: Number,
