@@ -1,0 +1,13 @@
+{
+  "campaignName": "",
+  "mainEpisodeCount": 0,
+  "sideEpisodeCount": 0,
+  "currentEpisode": {
+    "episodeThread": "",
+    "episodeName": "",
+    "episodeUsers": [],
+    "messageCount": 0,
+    "episodeLength": "N/A"
+  },
+  "pastEpisodes": []
+}
