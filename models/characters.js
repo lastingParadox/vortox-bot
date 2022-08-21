@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 let characterSchema = new Schema( {
-    id: { type: String, required: true, unique: true },
+    id: { type: String, required: true },
     name: String,
     description: String,
 
@@ -40,5 +40,12 @@ let characterSchema = new Schema( {
     quoteAmount: Number,
 
 })
+
+characterSchema.index({
+    id: 1,
+    'meta.guildId': 1,
+}, {
+    unique: true,
+});
 
 module.exports = { characterSchema }
