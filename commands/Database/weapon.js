@@ -115,7 +115,7 @@ module.exports = {
                 await newWeapon.save();
                 console.log(`Added weapon ${id} to the database.`);
             } catch (err) {
-                console.log(err);
+                console.log(`Id matching ${id} already exists in the ${interaction.guild.id} database, not adding new document.`);
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding \`${id}\``, `tried to add ${id} to the guild database.`, interaction.member);
                 failEmbed.setDescription(`Weapon id \`${id}\` already exists in this guild!`);
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
@@ -132,7 +132,7 @@ module.exports = {
             const weapon = await Weapon.findOne({ id: id });
 
             if (!weapon) {
-                console.log(`No document with id matching ${id} found in the guild database.`);
+                console.log(`No document with id matching ${id} found in the ${interaction.guild.id} database.`);
                 const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Deleting \`${id}\``, `tried to remove weapon ${id} from the guild database.`, interaction.member);
                 embedFail.setDescription(`Weapon \`${id}\` does not exist in this guild!`);
                 interaction.reply({ embeds: [embedFail], ephemeral: true });
@@ -169,7 +169,7 @@ module.exports = {
             const weapon = await Weapon.findOne({ id: id });
 
             if (!weapon) {
-                console.log(`No document with id matching ${id} found in the database.`);
+                console.log(`No document with id matching ${id} found in the ${interaction.guild.id} database.`);
                 const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to find weapon ${id} in the guild database.`, interaction.member);
                 embedFail.setDescription(`Weapon \`${id}\` does not exist in this guild!`);
                 interaction.reply({ embeds: [embedFail], ephemeral: true });
