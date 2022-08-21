@@ -2,6 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
 const { VortoxColor } = require('../../utilities/enums');
 const fs = require('fs');
+const path = require("path");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,7 +16,7 @@ module.exports = {
     async execute(interaction) {
         const question = interaction.options.getString('question');
 
-        const categories = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\8ball.json`, 'utf8'));
+        const categories = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'items', '8ball.json'), 'utf8'));
 
         const probability = Math.floor(Math.random() * 100) + 1;
 
