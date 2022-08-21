@@ -85,7 +85,7 @@ module.exports = {
                 roller = new DiceRoller(damage);
             } catch (error) {
                 if (error instanceof RollInitializeError || error instanceof InfinityError) {
-                    const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding Weapon \`${id}\``, `tried to add weapon ${id} to the database.`, interaction.member);
+                    const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding Weapon \`${id}\``, `tried to add weapon ${id} to the guild database.`, interaction.member);
                     failEmbed.setDescription("Dice syntax is invalid!")
                     await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                     return;
@@ -93,7 +93,7 @@ module.exports = {
             }
 
             if (roller.getMin() <= 0 || roller.getMin() === null) {
-                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding Weapon \`${id}\``, `tried to add weapon ${id} to the database.`, interaction.member);
+                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding Weapon \`${id}\``, `tried to add weapon ${id} to the guild database.`, interaction.member);
                 failEmbed.setDescription("Damage cannot have the possibility of being negative!")
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 return;
@@ -115,9 +115,9 @@ module.exports = {
                 await newWeapon.save();
                 console.log(`Added weapon ${id} to the database.`);
             } catch (err) {
-                console.log(err);
-                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding \`${id}\``, `tried to add ${id} to the database.`, interaction.member);
-                failEmbed.setDescription(`Weapon id \`${id}\` already exists!`);
+                console.log(`Id matching ${id} already exists in the ${interaction.guild.id} database, not adding new document.`);
+                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding \`${id}\``, `tried to add ${id} to the guild database.`, interaction.member);
+                failEmbed.setDescription(`Weapon id \`${id}\` already exists in this guild!`);
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
@@ -132,9 +132,9 @@ module.exports = {
             const weapon = await Weapon.findOne({ id: id });
 
             if (!weapon) {
-                console.log(`No document with id matching ${id} found in the database.`);
-                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Deleting \`${id}\``, `tried to remove weapon ${id} from the database.`, interaction.member);
-                embedFail.setDescription(`Weapon \`${id}\` does not exist!`);
+                console.log(`No document with id matching ${id} found in the ${interaction.guild.id} database.`);
+                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Deleting \`${id}\``, `tried to remove weapon ${id} from the guild database.`, interaction.member);
+                embedFail.setDescription(`Weapon \`${id}\` does not exist in this guild!`);
                 interaction.reply({ embeds: [embedFail], ephemeral: true });
                 return;
             }
@@ -142,10 +142,10 @@ module.exports = {
             const embedValidate = new VortoxEmbed(VortoxColor.DEFAULT, `Deleting ${weapon.name} Validation`, `is trying to remove weapon ${id} from the database.`, interaction.member);
             embedValidate.setDescription(`Are you sure you want to delete ${weapon.name} (ID: \`${id}\`)?\nRespond with \`${id}\`.`);
 
-            const embedSuccess = new VortoxEmbed(VortoxColor.SUCCESS, `Deleting ${weapon.name}`, `removed weapon ${id} from the database.`, interaction.member);
+            const embedSuccess = new VortoxEmbed(VortoxColor.SUCCESS, `Deleting ${weapon.name}`, `removed weapon ${id} from the guild database.`, interaction.member);
             embedSuccess.setDescription(`Deleted ${weapon.name} (ID: \`${id}\`)!`);
 
-            const embedCatch = new VortoxEmbed(VortoxColor.MISS, `Not Deleting ${weapon.name}`, `tried to remove weapon ${id} from the database.`, interaction.member);
+            const embedCatch = new VortoxEmbed(VortoxColor.MISS, `Not Deleting ${weapon.name}`, `tried to remove weapon ${id} from the guild database.`, interaction.member);
             embedCatch.setDescription(`Message content did not match \`${id}\` or ${interaction.member.displayName} did not respond in time.`);
 
             const filter = (m) => m.author.id === interaction.member.id;
@@ -169,9 +169,9 @@ module.exports = {
             const weapon = await Weapon.findOne({ id: id });
 
             if (!weapon) {
-                console.log(`No document with id matching ${id} found in the database.`);
-                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to find weapon ${id} in the database.`, interaction.member);
-                embedFail.setDescription(`Weapon \`${id}\` does not exist!`);
+                console.log(`No document with id matching ${id} found in the ${interaction.guild.id} database.`);
+                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to find weapon ${id} in the guild database.`, interaction.member);
+                embedFail.setDescription(`Weapon \`${id}\` does not exist in this guild!`);
                 interaction.reply({ embeds: [embedFail], ephemeral: true });
                 return;
             }
