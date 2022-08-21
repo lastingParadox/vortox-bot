@@ -60,7 +60,7 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
                 .setName('edit')
-                .setDescription('Edit weapon attributes.')
+                .setDescription('Edit a weapon\'s attributes.')
                 .addStringOption(option =>
                     option.setName('weapon_id')
                         .setDescription('The edited weapon\'s id.')
