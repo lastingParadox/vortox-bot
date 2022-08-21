@@ -10,5 +10,6 @@
   { "activity": "plot interference", "status": "Listening" },
   { "activity": "your balls", "status": "Watching" },
   { "activity": "space blackjack", "status": "Playing" },
-  { "activity": "failed 8balls", "status": "Watching" }
+  { "activity": "failed 8balls", "status": "Watching" },
+  { "activity":  "with anomalies", "status": "Playing" }
 ]
