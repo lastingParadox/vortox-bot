@@ -80,7 +80,7 @@ module.exports = {
                                 .setRequired(true)
                         )
                         .addIntegerOption(option =>
-                            option.setName('max-hp')
+                            option.setName('max_hp')
                                 .setDescription('Edit the character\'s maximum hit points. Must be greater than 0.')
                                 .setRequired(false)
                         )
@@ -158,7 +158,7 @@ module.exports = {
                                 .setRequired(true)
                         )
                         .addStringOption(option =>
-                            option.setName('image-url')
+                            option.setName('image_url')
                                 .setDescription('Edit the character\'s image.')
                                 .setRequired(false)
                         )
@@ -232,9 +232,9 @@ module.exports = {
                 await newCharacter.save();
                 console.log(`Added character ${id} to the database.`);
             } catch (err) {
-                console.log(err);
+                console.log(`Id matching ${id} already exists in the ${interaction.guildId} database, not adding new document.`);
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding \`${id}\``, `tried to add ${id} to the database.`, interaction.member);
-                failEmbed.setDescription(`Character id \`${id}\` already exists!`);
+                failEmbed.setDescription(`Character id \`${id}\` in this guild already exists!`);
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
@@ -249,23 +249,23 @@ module.exports = {
             const Location = mongoose.model('Location', locationSchema);
             const locations = await Location.find({ guildId: interaction.guildId });
 
-            const target = await Character.findOne({id: id});
+            const target = await Character.findOne({ id: id, 'meta.guildId': interaction.guildId });
 
             if (!target) {
-                console.log(`No document with id matching ${id} found in the database.`);
-                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Deleting \`${id}\``, `tried to remove character ${id} from the database.`, interaction.member);
-                embedFail.setDescription(`Character \`${id}\` does not exist!`);
+                console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
+                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Deleting \`${id}\``, `tried to remove character ${id} from the guild database.`, interaction.member);
+                embedFail.setDescription(`Character \`${id}\` does not exist in this guild!`);
                 interaction.reply({embeds: [embedFail], ephemeral: true});
                 return;
             }
 
-            const embedValidate = new VortoxEmbed(VortoxColor.DEFAULT, `Deleting ${target.name} Validation`, `is trying to remove character ${id} from the database.`, interaction.member);
+            const embedValidate = new VortoxEmbed(VortoxColor.DEFAULT, `Deleting ${target.name} Validation`, `is trying to remove character ${id} from the guild database.`, interaction.member);
             embedValidate.setDescription(`Are you sure you want to delete ${target.name} (ID: \`${id}\`)?\nRespond with \`${id}\`.`);
 
-            const embedSuccess = new VortoxEmbed(VortoxColor.SUCCESS, `Deleting ${target.name}`, `removed character ${id} from the database.`, interaction.member);
+            const embedSuccess = new VortoxEmbed(VortoxColor.SUCCESS, `Deleting ${target.name}`, `removed character ${id} from the guild database.`, interaction.member);
             embedSuccess.setDescription(`Deleted ${target.name} (ID: \`${id}\`)!`);
 
-            const embedCatch = new VortoxEmbed(VortoxColor.MISS, `Not Deleting ${target.name}`, `tried to remove character ${id} from the database.`, interaction.member);
+            const embedCatch = new VortoxEmbed(VortoxColor.MISS, `Not Deleting ${target.name}`, `tried to remove character ${id} from the guild database.`, interaction.member);
             embedCatch.setDescription(`Message content did not match \`${id}\` or ${interaction.member.displayName} did not respond in time.`);
 
             const filter = (m) => m.author.id === interaction.member.id;
@@ -296,12 +296,12 @@ module.exports = {
                 });
         }
         else if (subcommand === 'info') {
-            const target = await Character.findOne({ id: id });
+            const target = await Character.findOne({ id: id, 'meta.guildId': interaction.guildId });
 
             if (!target) {
-                console.log(`No document with id matching ${id} found in the database.`);
-                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to find character ${id} in the database.`, interaction.member);
-                embedFail.setDescription(`Character \`${id}\` does not exist!`);
+                console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
+                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to find character ${id} in the guild database.`, interaction.member);
+                embedFail.setDescription(`Character \`${id}\` does not exist in this guild!`);
                 interaction.reply({ embeds: [embedFail], ephemeral: true });
                 return;
             }
@@ -341,12 +341,12 @@ module.exports = {
             await interaction.reply({ embeds: [embed] });
         }
         else {
-            const target = await Character.findOne({ id: id });
+            const target = await Character.findOne({ id: id, 'meta.guildId': interaction.guildId });
 
             if (!target) {
-                console.log(`No document with id matching ${id} found in the database.`);
-                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to edit character ${id} in the database.`, interaction.member);
-                embedFail.setDescription(`Character \`${id}\` does not exist!`);
+                console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
+                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to edit character ${id} in the guild database.`, interaction.member);
+                embedFail.setDescription(`Character \`${id}\` does not exist in this guild!`);
                 interaction.reply({ embeds: [embedFail], ephemeral: true });
                 return;
             }
@@ -361,8 +361,9 @@ module.exports = {
                     const test = await Character.findOne({ id: newId });
 
                     if (test !== null) {
-                        const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding \`${id}\``, `tried to add ${id} to the database.`, interaction.member);
-                        failEmbed.setDescription(`Character id \`${id}\` already exists!`);
+                        console.log(`Id matching ${newId} found in the ${interaction.guildId} database, not editing document ${id}.`);
+                        const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${target.name}\``, `tried to edit ${id} in the guild database.`, interaction.member);
+                        failEmbed.setDescription(`Character id \`${newId}\` already exists!`);
                         await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                         return;
                     }
@@ -374,12 +375,12 @@ module.exports = {
 
             }
             else if (subcommand === 'game') {
-                const maxHp = interaction.options.getInteger('max-hp');
+                const maxHp = interaction.options.getInteger('max_hp');
                 const shield = interaction.options.getInteger('shield');
                 const incorporeal = interaction.options.getBoolean('incorporeal');
 
                 if (maxHp !== null || shield !== null) {
-                    const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding \`${id}\``, `tried to add ${id} to the database.`, interaction.member);
+                    const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${target.name}\``, `tried to edit ${id} in the guild database.`, interaction.member);
                     let errorDescription = "";
 
                     if (maxHp !== null && maxHp <= 0) errorDescription += `Maximum HP must be greater than zero!`;
@@ -414,7 +415,7 @@ module.exports = {
 
                 for (const number in resistanceArray) {
                     if (!validateIntHundred(number)) {
-                        const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Adding \`${id}\``, `tried to add ${id} to the database.`, interaction.member);
+                        const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${target.name}\``, `tried to edit ${id} in the guild database.`, interaction.member);
                         failEmbed.setDescription(`Resistances must be between 0 and 100 (inclusive)!`)
                         await interaction.reply( { embeds: [failEmbed], ephemeral: true });
                         return;
@@ -428,7 +429,7 @@ module.exports = {
                 }
             }
             else {
-                const image = interaction.options.getString('image-url');
+                const image = interaction.options.getString('image_url');
                 const color = interaction.options.getString('color');
                 const author = interaction.options.getMentionable('author');
 
@@ -438,7 +439,7 @@ module.exports = {
             }
 
             target.save();
-            const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Editing ${target.name}`, `edited ${target.name}.`, interaction.member);
+            const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Editing ${target.name}`, `edited ${target.name} in the guild database.`, interaction.member);
             successEmbed.setDescription(`Successfully edited ${target.name}!`);
 
             await interaction.reply({ embeds: [successEmbed] });

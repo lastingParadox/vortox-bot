@@ -11,4 +11,11 @@ let locationSchema = new Schema( {
     guildId: String
 })
 
+locationSchema.index({
+    id: 1,
+    guildId: 1,
+}, {
+    unique: true,
+});
+
 module.exports = { locationSchema }

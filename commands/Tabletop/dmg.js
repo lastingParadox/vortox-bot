@@ -149,7 +149,7 @@ module.exports = {
             totalDamage = roller.getTotal();
         }
 
-        if (!target.incorporeal && damageType !== 'incorporeal' && totalDamage >= 0) {
+        if (target.game.incorporeal && damageType !== 'incorporeal' && totalDamage >= 0) {
             combatLog += `${target.name} is \`incorporeal\`!\n${weaponName} misses, dealing no damage to ${target.name}.`
             const ghostEmbed = new VortoxEmbed(VortoxColor.MISS, `Damaging ${target.name}`, `tried to damage ${target.name}.`, interaction.member);
             ghostEmbed.setDescription(combatLog);
