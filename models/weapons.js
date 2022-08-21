@@ -9,6 +9,7 @@ let weaponSchema = new Schema( {
     damageType: String,
     damage: String,
     missRate: Number,
+    timesUsed: Number,
 
     guildId: String,
     author: String

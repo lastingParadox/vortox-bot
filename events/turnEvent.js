@@ -2,7 +2,7 @@ const { EpisodeUtils } = require("../utilities/episodeUtils");
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction, client) {
-        if (!interaction.isCommand()) return;
+        if (!interaction.isCommand() || interaction.ephemeral) return;
         const command = client.commands.get(interaction.commandName);
         if (!command || !EpisodeUtils.isCurrentEpisode() || interaction.channel.id !== EpisodeUtils.episodeArray.currentEpisode.episodeThread)
             return;

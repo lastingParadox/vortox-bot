@@ -70,6 +70,7 @@ module.exports = {
         let roller;
         let combatLog = "";
         let totalDamage = 0;
+        let weaponName;
         let damageType;
 
         let target = await Character.findOne({ id: targetId });
@@ -95,12 +96,13 @@ module.exports = {
                 return;
             }
 
+            weaponName = weapon.name;
             damageType = weapon.damageType;
-            combatLog += `Rolling for ${weapon.name} accuracy...\n`;
             const random = Math.floor(Math.random() * 100);
-            combatLog += `Rolled a \`${random}\`!\n${weapon.name}'s miss rate is \`${weapon.missRate}%\`.\n`;
 
             if (random <= weapon.missRate) {
+                combatLog += `Rolling for ${weapon.name} accuracy...\n`;
+                combatLog += `Rolled a \`${random}\`!\n${weapon.name}'s miss rate is \`${weapon.missRate}%\`.\n`;
                 combatLog += `The attack misses!`;
                 const embed = new VortoxEmbed(VortoxColor.MISS, `Attack Against ${target.name} Missed!`, `missed while attacking ${target.name}.`, interaction.member);
                 embed.setDescription(combatLog);
@@ -112,7 +114,17 @@ module.exports = {
 
             for (let i = 0; i < multiplier; i++) {
                 roller = new DiceRoller(weapon.damage)
-                totalDamage += roller.getTotal();
+                if (roller.getTotal() === roller.getMax()) {
+                    combatLog += `Critical Hit! ${weapon.name} is rolled again!\n`
+                    let temp = new DiceRoller(weapon.damage);
+                    totalDamage += temp.getTotal();
+                }
+                if (roller.getTotal() === roller.getMin()) {
+                    combatLog += `Critical Miss! ${weapon.name}'s damage is negated!\n`
+                }
+                else {
+                    totalDamage += roller.getTotal();
+                }
             }
         }
         else {
@@ -134,11 +146,18 @@ module.exports = {
 
         const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Damaging ${target.name}`, `damaged ${target.name}.`, interaction.member)
 
-        if (totalDamage >= 0)
-            combatLog += `The attack hits for \`${totalDamage}\` damage!\n`;
-        else {
+        if (totalDamage > 0)
+            combatLog += `${weaponName} hits for \`${totalDamage}\` damage!\n`;
+        else if (totalDamage < 0) {
             successEmbed.setTitle(`Healing ${target.name}`).setFooter(`healed ${target.name}.`);
             combatLog += `${target.name} is healed for \`${Math.abs(totalDamage)}\` damage!\n`;
+        }
+        else {
+            const missEmbed = new VortoxEmbed(VortoxColor.MISS, `Damaging ${target.name}`, `missed while attacking ${target.name}.`, interaction.member);
+            combatLog += `${weaponName} misses, dealing no damage to ${target.name}.`;
+            missEmbed.setDescription(combatLog);
+            await interaction.reply({ embeds: [missEmbed] });
+            return;
         }
 
         if (target.game.resistances[damageType] > 0 && totalDamage > 0) {
