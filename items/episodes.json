@@ -1,0 +1,14 @@
+{
+  "campaignName": "Burger Rainbow",
+  "mainEpisodeCount": 1,
+  "sideEpisodeCount": 0,
+  "currentEpisode": {
+    "episodeThread": "",
+    "episodeName": "",
+    "episodeUsers": [],
+    "turnCount": 1,
+    "messageCount": 0,
+    "episodeLength": "N/A"
+  },
+  "pastEpisodes": []
+}

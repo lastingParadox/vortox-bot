@@ -1,0 +1,26 @@
+{
+  "name": "vortoxbot2",
+  "version": "1.0.0",
+  "description": "VortoxBot 2.0",
+  "main": "index.js",
+  "dependencies": {
+    "@discordjs/builders": "^1.1.0",
+    "discord.js": "^14.2.0",
+    "dotenv": "^16.0.1",
+    "mongoose": "^6.5.2",
+    "vortox-dice-parser": "^1.1.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lastingParadox/vortox-bot.git"
+  },
+  "author": "Zander Preston <zanpres@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lastingParadox/vortox-bot/issues"
+  },
+  "homepage": "https://github.com/lastingParadox/vortox-bot#readme"
+}
