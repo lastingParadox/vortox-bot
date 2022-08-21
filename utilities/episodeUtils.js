@@ -1,16 +1,18 @@
 const fs = require('fs');
+const path = require("path");
 
 class EpisodeUtils {
 
     static episodeArray;
+    static #episodesPath = path.join(__dirname, '..', 'items', 'episodes.json');
 
     static start() {
-        EpisodeUtils.episodeArray = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`, 'utf8'));
+        EpisodeUtils.episodeArray = JSON.parse(fs.readFileSync(EpisodeUtils.#episodesPath, 'utf8'));
 
-        fs.watch(process.cwd() + `\\items\\episodes.json`, (eventType) => {
+        fs.watch(EpisodeUtils.#episodesPath, (eventType) => {
             if (eventType === "change") {
                 try {
-                    EpisodeUtils.episodeArray = JSON.parse(fs.readFileSync(process.cwd() + `\\items\\episodes.json`, 'utf8'));
+                    EpisodeUtils.episodeArray = JSON.parse(fs.readFileSync(EpisodeUtils.#episodesPath, 'utf8'));
                 } catch (e) {
                     console.log("Unable to parse episodes.json.", e);
                 }
@@ -19,7 +21,7 @@ class EpisodeUtils {
     }
 
     static save() {
-        fs.writeFileSync(process.cwd() + `\\items\\episodes.json`, JSON.stringify(EpisodeUtils.episodeArray, null, 2), async err => {
+        fs.writeFileSync(EpisodeUtils.#episodesPath, JSON.stringify(EpisodeUtils.episodeArray, null, 2), async err => {
             if (err) {
                 console.log(`Error writing to episodes.json.`, err);
             }
@@ -27,7 +29,7 @@ class EpisodeUtils {
     }
 
     static saveNew(episodes) {
-        fs.writeFileSync(process.cwd() + `\\items\\episodes.json`, JSON.stringify(episodes, null, 2), async err => {
+        fs.writeFileSync(EpisodeUtils.#episodesPath, JSON.stringify(episodes, null, 2), async err => {
             if (err) {
                 console.log(`Error writing new instance to episodes.json.`, err);
             }
