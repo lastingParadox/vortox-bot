@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
 const { VortoxColor } = require('../../utilities/enums');
 const {EpisodeUtils} = require("../../utilities/episodeUtils");
+const {VortoxEmbed} = require("../../utilities/embeds");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,62 +12,53 @@ module.exports = {
                 .setDescription('Returns whose turn it is for the current episode.'))
         .addSubcommand(subcommand =>
             subcommand.setName('skip')
-                .setDescription('Skips the current player for the current episode.')),
+                .setDescription('Skips the current player for the current turn.')),
 
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
-        const embed = new EmbedBuilder()
-            .setTitle("Episode Turn")
+        let embed;
 
         if (!EpisodeUtils.isCurrentEpisode()) {
-            embed.setColor(VortoxColor.ERROR)
-                .setDescription("There is no episode currently in progress!")
-                .setFooter({
-                    iconURL: interaction.member.displayAvatarURL(),
-                    text: `${interaction.member.displayName} tried to do something that's not possible.`
-                });
-            await interaction.reply({ embeds: [embed], ephemeral: true });
+            const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, interaction.member);
+            failEmbed.setDescription(`There is no episode currently in progress!`);
+            await interaction.reply({ embeds: [failEmbed], ephemeral: true });
             return;
         }
 
         if (subcommand === 'show') {
 
-        const userList = EpisodeUtils.episodeArray.currentEpisode.episodeUsers;
-        const user = userList.find(x => x.turn === true);
-
-        embed.setColor(VortoxColor.DEFAULT)
-            .setTitle("Episode Turn");
-
-        if (user.id === "DM") {
-            embed.setDescription(`It's the DM's turn!`);
-        }
-        else {
-            embed.setDescription(`It's <@${user.id}>'s turn!`)
-        }
-
-            embed.setFooter({
-                iconURL: interaction.member.displayAvatarURL(),
-                text: `${interaction.member.displayName} asked who has the turn currently.`
-            });
-        }
-
-        else {
-            const userList = EpisodeUtils.episodeArray.currentEpisode.episodeUsers;
+            const userList = EpisodeUtils.currentEpisode.players;
             const user = userList.find(x => x.turn === true);
-            const newUser = userList[(userList.indexOf(user) + 1) % userList.length];
+
+            embed = new VortoxEmbed(VortoxColor.DEFAULT, "Episode Turn", `${interaction.member.displayName} asked who has the turn currently.`, interaction.member);
+
+            if (user.id === "DM") embed.setDescription(`It's the DM's turn!`);
+            else embed.setDescription(`It's <@${user.id}>'s turn!`);
+        }
+
+        else {
+            const userList = EpisodeUtils.currentEpisode.players;
+            const user = userList.find(x => x.turn === true);
+            let newUser;
+
+            let index = userList.indexOf(user);
+            for (let i = 1; i < userList.length; i++) {
+                let newPlayer = userList[(index + i) % userList.length];
+                if (!newPlayer.hasLeft) {
+                    newUser = newPlayer;
+                    newPlayer.turn = true;
+                    break;
+                }
+            }
 
             user.turn = false;
-            newUser.turn = true;
 
-            EpisodeUtils.save();
+            await EpisodeUtils.currentEpisode.save();
 
-            embed.setColor(VortoxColor.DEFAULT)
-                .setTitle("Skipping Turn")
-                .setDescription(`Skipped <@${user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
-                .setFooter({
-                    iconURL: interaction.member.displayAvatarURL(),
-                    text: `${interaction.member.displayName} skipped <@${newUser.id}>'s turn.`
-                });
+            embed = new VortoxEmbed(VortoxColor.DEFAULT, "Skipping Turn", `${interaction.member.displayName} skipped ${newUser.name}'s turn.`, interaction.member);
+            if (newUser.id === "DM")
+                embed.setDescription(`Skipped <@${user.id}>'s turn.\nIt is now the DM's turn.`)
+            else embed.setDescription(`Skipped <@${user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
         }
 
         await interaction.reply({ embeds: [embed] });
