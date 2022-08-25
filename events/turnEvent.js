@@ -5,16 +5,16 @@ module.exports = {
     async execute(interaction, client) {
         if (!interaction.isCommand() || interaction.ephemeral) return;
         const command = client.commands.get(interaction.commandName);
-        if (!command || !EpisodeUtils.isCurrentEpisode() || interaction.channel.id !== EpisodeUtils.episodeArray.currentEpisode.episodeThread)
+        if (!command || !EpisodeUtils.isCurrentEpisode() || interaction.channel.id !== EpisodeUtils.currentEpisode.threadId)
             return;
 
         if (command.data.name !== "8ball" && command.data.name !== "dmg" && command.data.name !== "choose" && command.data.name !== "roll") {
             return;
         }
 
-        const currentEpisode = EpisodeUtils.episodeArray.currentEpisode;
+        const currentEpisode = EpisodeUtils.currentEpisode;
 
-        const user = currentEpisode.episodeUsers.find(x => x.turn === true);
+        const user = currentEpisode.players.find(x => x.turn === true);
 
         if (user.id === "DM") {
             if (interaction.member.roles.cache.find(role => role.id === user.role) === null)
@@ -25,14 +25,14 @@ module.exports = {
 
         user.turn = false;
 
-        for (let i = 1; i < currentEpisode.episodeUsers.length; i++) {
-            let temp = currentEpisode.episodeUsers[(currentEpisode.episodeUsers.indexOf(user) + i) % currentEpisode.episodeUsers.length]
+        for (let i = 1; i < currentEpisode.players.length; i++) {
+            let temp = currentEpisode.players[(currentEpisode.players.indexOf(user) + i) % currentEpisode.players.length]
             if (temp.hasLeft !== true) {
                 temp.turn = true;
                 break;
             }
         }
 
-        EpisodeUtils.save();
+        await EpisodeUtils.currentEpisode.save();
     },
 };
