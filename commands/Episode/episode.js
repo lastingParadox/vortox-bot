@@ -49,6 +49,15 @@ module.exports = {
                 .setDescription('Adds you to an ongoing episode.')
         )
         .addSubcommand(subcommand =>
+            subcommand.setName('info')
+                .setDescription('Adds you to an ongoing episode.')
+                .addStringOption(option =>
+                    option.setName('episode_id')
+                        .setDescription('The edited episode\'s id.')
+                        .setRequired(true)
+                )
+        )
+        .addSubcommand(subcommand =>
             subcommand.setName('leave')
                 .setDescription('Removes you from an ongoing episode.')
         )
@@ -63,6 +72,29 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand.setName('stop')
                 .setDescription('Stops the current episode.')
+        )
+        .addSubcommand(subcommand =>
+                subcommand.setName('edit')
+                    .setDescription('Edit information regarding an episode. (id, name, description).')
+                    .addStringOption(option =>
+                        option.setName('episode_id')
+                            .setDescription('The edited episode\'s id.')
+                            .setRequired(true)
+                    )
+                    .addStringOption(option =>
+                        option.setName('new_id')
+                            .setDescription('Edit the episode\'s id.')
+                            .setRequired(false)
+                    )
+                    .addStringOption(option =>
+                        option.setName('name')
+                            .setDescription('Edit the episode\'s name.')
+                            .setRequired(false))
+                    .addStringOption(option =>
+                        option.setName('description')
+                            .setDescription('Edit the episode\'s description.')
+                            .setRequired(false)
+                    )
         ),
 
     async execute(interaction) {
@@ -115,8 +147,8 @@ module.exports = {
             }
 
             let dmRole = await interaction.guild.roles.cache.find(role => role.name === "DM");
-
-            users.push(({ id: "DM", name: "DM", role: dmRole.id, turn: false }));
+            if (dmRole !== undefined)
+                users.push(({ id: "DM", name: "DM", role: dmRole.id, turn: false }));
 
             users.sort(sortEpisodeUsers);
 
@@ -162,13 +194,11 @@ module.exports = {
                 return;
             }
 
-            let exist = false;
-
             const player = currentEpisode.players.find(aPlayer => aPlayer.id === interaction.member.id);
-            if (player) exist = true;
 
-            if (!exist) {
+            if (player === undefined) {
                 currentEpisode.players.push({id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, hasLeft: false, turn: false});
+                console.log(`Added ${interaction.member.id} to the current episode!`);
                 currentEpisode.players.sort(sortEpisodeUsers);
             } else player.hasLeft = false;
 
@@ -266,6 +296,78 @@ module.exports = {
 
             await interaction.reply({ embeds: [successEmbed] });
             await thread.setArchived(true);
+        }
+        else if (subcommand === "edit") {
+            const id = interaction.options.getString("episode_id");
+            const newId = interaction.options.getString("new_id");
+            const name = interaction.options.getString("name");
+            const description = interaction.options.getString("description");
+
+            const episode = await Episode.findOne({ id: id, guildId: interaction.guildId });
+
+            if (!episode) {
+                console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
+                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${id}\``, `tried to edit episode ${id} in the guild database.`, interaction.member);
+                embedFail.setDescription(`Episode \`${id}\` does not exist in this guild!`);
+                interaction.reply({ embeds: [embedFail], ephemeral: true });
+                return;
+            }
+
+            if (newId !== null) {
+                const tempFind = await Episode.findOne({ id: newId, guildId: interaction.guildId });
+
+                if (tempFind !== null) {
+                    console.log(`Id matching ${newId} found in the ${interaction.guildId} database, not editing document ${id}.`);
+                    const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${episode.name}\``, `tried to edit ${episode.name} in the guild database.`, interaction.member);
+                    failEmbed.setDescription(`Episode id \`${newId}\` already exists!`);
+                    await interaction.reply({ embeds: [failEmbed], ephemeral: true });
+                    return;
+                }
+                else episode.id = newId;
+            }
+
+            if (name !== null) episode.name = name;
+            if (description !== null) episode.description = description;
+
+            await episode.save();
+
+            const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Editing ${episode.name}`, `edited ${episode.name} in the guild database.`, interaction.member);
+            successEmbed.setDescription(`Successfully edited ${episode.name}!`);
+
+            await interaction.reply({ embeds: [successEmbed] });
+        }
+        else if (subcommand === 'info') {
+            const id = interaction.options.getString("episode_id");
+            const episode = await Episode.findOne({ id: id, guildId: interaction.guildId });
+
+            if (!episode) {
+                console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
+                const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to find episode ${id} in the guild database.`, interaction.member);
+                embedFail.setDescription(`Episode \`${id}\` does not exist in this guild!`);
+                interaction.reply({ embeds: [embedFail], ephemeral: true });
+                return;
+            }
+
+            let userString = "";
+            for (let player of episode.players) {
+                if (player.id !== "DM")
+                    userString += `<@${player.id}>\n`;
+            }
+
+            const thread = await interaction.guild.channels.cache.get(episode.threadId);
+
+            const embed = new VortoxEmbed(VortoxColor.DEFAULT, `${episode.name}`, `got information for ${episode.name}.`, interaction.member);
+            embed.setDescription(episode.description)
+                .addFields([
+                    { name: "ID", value: `\`${episode.id}\``, inline: true },
+                    { name: "Thread", value: `[Click Here](https://discord.com/channels/${interaction.guild.id}/${thread.id})`, inline: true },
+                    { name: "Message Count", value: `${episode.messageCount}`, inline: true },
+                    { name: "Length", value: episode.episodeLength, inline: true },
+                    { name: "Players", value: userString, inline: false },
+                ])
+
+            await interaction.reply({ embeds: [embed] });
+
         }
     }
 }
