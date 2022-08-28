@@ -1,11 +1,11 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { EmbedBuilder } = require('discord.js');
 
 const mongoose = require("mongoose");
 const { characterSchema } = require("../../models/characters");
 const { locationSchema } = require("../../models/locations");
 
 const { VortoxColor } = require('../../utilities/enums');
+const {VortoxEmbed} = require("../../utilities/embeds");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,10 +21,10 @@ module.exports = {
                 .setRequired(false)),
 
     async execute(interaction) {
-        const characterId = interaction.options.getString('character_id');
-        const locationId = interaction.options.getString('location_id');
-
-        const embed = new EmbedBuilder();
+        let characterId = interaction.options.getString('character_id');
+        if (characterId !== null) characterId = characterId.toLowerCase();
+        let locationId = interaction.options.getString('location_id');
+        if (locationId !== null) locationId = locationId.toLowerCase();
 
         const Character = mongoose.model("Characters", characterSchema);
         const Location = mongoose.model("Locations", locationSchema);
@@ -35,28 +35,18 @@ module.exports = {
         if (characterId !== null && locationId !== null ) {
             chosenCharacter = await Character.findOne({ id: characterId, locations: locationId, quoteAmount: { $gt: 0 } });
             if (chosenCharacter === null) {
-                embed.setColor(VortoxColor.ERROR)
-                    .setTitle('Retrieving Quote')
-                    .setDescription(`Location \`${locationId}\` does not exist for character \`${characterId}\`!`)
-                    .setFooter({
-                        iconURL: interaction.member.displayAvatarURL(),
-                        text: `${interaction.member.displayName} tried to get a quote.`
-                    });
-                await interaction.reply({ embeds: [embed], ephemeral: true });
+                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Quote', 'tried to get a quote.', interaction.member);
+                failEmbed.setDescription(`Location \`${locationId}\` does not exist for character \`${characterId}\`!`)
+                await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
         }
         else if (characterId !== null && locationId === null) {
             chosenCharacter = await Character.findOne({ id: characterId, quoteAmount: { $gt: 0 } });
             if (chosenCharacter === null) {
-                embed.setColor(VortoxColor.ERROR)
-                    .setTitle('Retrieving Quote')
-                    .setDescription(`Character \`${characterId}\` does not exist!`)
-                    .setFooter({
-                        iconURL: interaction.member.displayAvatarURL(),
-                        text: `${interaction.member.displayName} tried to get a quote.`
-                    });
-                await interaction.reply({ embeds: [embed], ephemeral: true });
+                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Quote', 'tried to get a quote.', interaction.member);
+                failEmbed.setDescription(`Character \`${characterId}\` does not exist!`)
+                await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
         }
@@ -69,21 +59,24 @@ module.exports = {
                 characterArray = await Character.find({ quoteAmount: { $gt: 0 } });
 
             if (characterArray.length === 0) {
-                embed.setColor(VortoxColor.ERROR)
-                    .setTitle('Retrieving Quote')
-                    .setDescription('There are no characters with quotes to retrieve from!')
-                    .setFooter({
-                        iconURL: interaction.member.displayAvatarURL(),
-                        text: `${interaction.member.displayName} tried to get a quote.`
-                    });
-                await interaction.reply({ embeds: [embed], ephemeral: true });
+                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Quote', 'tried to get a quote.', interaction.member);
+                failEmbed.setDescription('There are no characters with quotes to retrieve from!')
+                await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
 
-            const quoteCharacter = await Character.aggregate([
-                { $match: { quoteAmount: { $gt: 0 } } },
-                { $group: { _id: null, amount: { $sum: "$quoteAmount" } } }
-            ]);
+            let quoteCharacter;
+            if (locationId !== null) {
+                quoteCharacter = await Character.aggregate([
+                    { $match: { locations: locationId, quoteAmount: { $gt: 0 } } },
+                    { $group: { _id: null, amount: { $sum: "$quoteAmount" } } }
+                ]);
+            }
+            else
+                quoteCharacter = await Character.aggregate([
+                    { $match: { quoteAmount: { $gt: 0 } } },
+                    { $group: { _id: null, amount: { $sum: "$quoteAmount" } } }
+                ]);
 
             let total = quoteCharacter[0].amount;
 
@@ -101,7 +94,7 @@ module.exports = {
         let quoteArray;
 
         if (locationId !== null)
-            quoteArray = chosenCharacter.quotes.filter(quote => quote.location);
+            quoteArray = chosenCharacter.quotes.filter(quote => quote.location === locationId);
         else
             quoteArray = chosenCharacter.quotes;
 
@@ -115,7 +108,8 @@ module.exports = {
             }
         }
 
-        embed.setColor(chosenCharacter.meta.color)
+        const successEmbed = new VortoxEmbed(chosenCharacter.meta.color, '', `retrieved a quote from ${chosenCharacter.name}.`, interaction.member);
+        successEmbed
             .setAuthor({
                 name: `${chosenCharacter.name} says...`,
                 iconURL: chosenCharacter.meta.image
@@ -124,11 +118,7 @@ module.exports = {
                 { name: 'Quote', value: chosenQuote.quote, inline: true },
                 { name: 'Location', value: locationName, inline: true }
             ])
-            .setFooter({
-                text: `${interaction.member.displayName} retrieved a quote from ${chosenCharacter.name}.`,
-                iconURL: interaction.member.displayAvatarURL()
-            });
 
-        await interaction.reply({ embeds: [embed] });
+        await interaction.reply({ embeds: [successEmbed] });
     },
 };

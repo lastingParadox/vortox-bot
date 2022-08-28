@@ -9,7 +9,9 @@ class VortoxEmbed extends EmbedBuilder {
         super();
         this.#member = member
         this.#icon_url = this.#member.displayAvatarURL();
-        this.setTitle(titleText).setColor(color);
+        if (titleText !== "")
+            this.setTitle(titleText);
+        this.setColor(color);
         this.setFooter(footerText);
     }
 
