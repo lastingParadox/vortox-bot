@@ -19,13 +19,15 @@ module.exports = {
         if (user.id === "DM") {
             if (interaction.member.roles.cache.find(role => role.id === user.role) === null)
                 return;
-            currentEpisode.turnCount++;
         }
         else if (user.id !== interaction.member.id) return;
 
+        if (currentEpisode.players.indexOf(user) === currentEpisode.players.length - 1)
+            currentEpisode.turnCount++;
+
         user.turn = false;
 
-        for (let i = 1; i < currentEpisode.players.length; i++) {
+        for (let i = 1; i <= currentEpisode.players.length; i++) {
             let temp = currentEpisode.players[(currentEpisode.players.indexOf(user) + i) % currentEpisode.players.length]
             if (temp.hasLeft !== true) {
                 temp.turn = true;

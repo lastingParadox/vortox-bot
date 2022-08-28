@@ -186,7 +186,7 @@ module.exports = {
         }
         else if (subcommand === 'delete') {
 
-            const weapon = await Weapon.findOne({ id: id, 'meta.guildId': interaction.guildId });
+            const weapon = await Weapon.findOne({ id: id, guildId: interaction.guildId });
 
             if (!weapon) {
                 console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
@@ -223,7 +223,7 @@ module.exports = {
                 });
         }
         else if (subcommand === 'info') {
-            const weapon = await Weapon.findOne({ id: id, 'meta.guildId': interaction.guildId });
+            const weapon = await Weapon.findOne({ id: id, guildId: interaction.guildId });
 
             if (!weapon) {
                 console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
@@ -256,7 +256,7 @@ module.exports = {
             let missRate = interaction.options.getInteger('miss_rate');
             let author = interaction.options.getMentionable('author');
 
-            const weapon = await Weapon.findOne({ id: id, 'meta.guildId': interaction.guildId });
+            const weapon = await Weapon.findOne({ id: id, guildId: interaction.guildId });
 
             if (!weapon) {
                 console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
@@ -267,7 +267,7 @@ module.exports = {
             }
 
             if (newId !== null) {
-                const tempFind = await Weapon.findOne({ id: newId, 'meta.guildId': interaction.guildId });
+                const tempFind = await Weapon.findOne({ id: newId, guildId: interaction.guildId });
 
                 if (tempFind !== null) {
                     console.log(`Id matching ${newId} found in the ${interaction.guildId} database, not editing document ${id}.`);

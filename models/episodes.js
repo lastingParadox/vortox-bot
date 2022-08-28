@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 let episodeSchema = new Schema( {
-    id: { type: String, required: true, unique: true },
+    id: { type: String, required: true },
     name: String,
     description: String,
     threadId: String,
