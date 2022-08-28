@@ -284,7 +284,7 @@ module.exports = {
         }
         else if (subcommand === "stop") {
             const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
-            thread.send("Ending episode!");
+            thread.send("Stopping episode!");
 
             currentEpisode.name = thread.name;
             if (currentEpisode.episodeLength !== "") currentEpisode.episodeLength = msToTime(Date.now() - parseInt(currentEpisode.episodeLength));
