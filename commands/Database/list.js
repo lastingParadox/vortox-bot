@@ -4,8 +4,10 @@ const mongoose = require("mongoose");
 const { characterSchema } = require("../../models/characters");
 const { weaponSchema } = require("../../models/weapons");
 const {episodeSchema} = require("../../models/episodes");
-const { VortoxEmbed, VortoxPages } = require("../../utilities/embeds");
+const { VortoxEmbed } = require("../../utilities/embeds");
 const { VortoxColor } = require("../../utilities/enums");
+const {listSchema} = require("../../models/lists");
+const {ActionRowBuilder, ButtonBuilder, ButtonStyle} = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -29,10 +31,22 @@ module.exports = {
 
     async execute(interaction) {
         await interaction.deferReply();
+
         const embeds = [];
         let model;
+        const List = mongoose.model("Lists", listSchema);
+        let type = "";
+        let title = "";
+        let footer = "";
+        let idList = "";
+        let nameList = "";
+        let miscList = "";
 
         if (interaction.options.getSubcommand() === 'characters') {
+            type = "characters";
+            title = "List of All Characters";
+            footer = "retrieved the character list.";
+
             model = mongoose.model("Characters", characterSchema);
             const characterList = await model.find( { "meta.guildId": interaction.guildId } ).sort('id');
 
@@ -43,41 +57,28 @@ module.exports = {
                 return;
             }
 
-            let idList = "";
-            let nameList = "";
-            let hpList = "";
-            let j = -1;
-
             for (let i = 0; i < characterList.length; i++) {
-                if (i % 10 === 0) {
-                    if (i !== 0) {
-                        embeds[j].addFields([
-                            { name: "ID", value: idList, inline: true },
-                            { name: "Name", value: nameList, inline: true },
-                            { name: "HP", value: hpList, inline: true }
-                        ]);
-                        idList = "";
-                        nameList = "";
-                        hpList = "";
-                    }
-                    embeds.push(new VortoxEmbed(VortoxColor.DEFAULT, "List of All Characters", 'retrieved the character list.', interaction.member));
-                    j++;
+                if (i !== 0 && i % 10 === 0) {
+                    embeds.push({ id: idList, name: nameList, misc: miscList });
+                    idList = "";
+                    nameList = "";
+                    miscList = "";
                 }
 
                 idList += `\`${characterList[i].id}\`\n`
                 nameList += `\`${characterList[i].name}\`\n`
-                hpList += `\`${characterList[i].game.hp}/${characterList[i].game.maxHp}\`\n`;
+                miscList += `\`${characterList[i].game.hp}/${characterList[i].game.maxHp}\`\n`;
             }
 
             if (idList !== "") {
-                embeds[embeds.length - 1].addFields([
-                    { name: "ID", value: idList, inline: true },
-                    { name: "Name", value: nameList, inline: true },
-                    { name: "HP", value: hpList, inline: true }
-                ]);
+                embeds.push({ id: idList, name: nameList, misc: miscList });
             }
         }
         else if (interaction.options.getSubcommand() === 'weapons') {
+            type = "weapons";
+            title = "List of All Weapons";
+            footer = "retrieved the weapon list.";
+
             model = mongoose.model("Weapons", weaponSchema);
             const weaponList = await model.find( { guildId: interaction.guildId }).sort('id');
 
@@ -88,41 +89,28 @@ module.exports = {
                 return;
             }
 
-            let idList = "";
-            let nameList = "";
-            let typeList = "";
-            let j = -1;
-
             for (let i = 0; i < weaponList.length; i++) {
-                if (i % 10 === 0) {
-                    if (i !== 0) {
-                        embeds[j].addFields([
-                            { name: "ID", value: idList, inline: true },
-                            { name: "Name", value: nameList, inline: true },
-                            { name: "Damage Type", value: typeList, inline: true }
-                        ]);
-                        idList = "";
-                        nameList = "";
-                        typeList = "";
-                    }
-                    embeds.push(new VortoxEmbed(VortoxColor.DEFAULT, "List of All Weapons", 'retrieved the weapon list.', interaction.member));
-                    j++;
+                if (i !== 0 && i % 10 === 0) {
+                    embeds.push({ id: idList, name: nameList, misc: miscList });
+                    idList = "";
+                    nameList = "";
+                    miscList = "";
                 }
 
                 idList += `\`${weaponList[i].id}\`\n`
                 nameList += `\`${weaponList[i].name}\`\n`
-                typeList += `\`${weaponList[i].damageType}\`\n`;
+                miscList += `\`${weaponList[i].damageType}\`\n`;
             }
 
             if (idList !== "") {
-                embeds[embeds.length - 1].addFields([
-                    { name: "ID", value: idList, inline: true },
-                    { name: "Name", value: nameList, inline: true },
-                    { name: "Damage Type", value: typeList, inline: true }
-                ]);
+                embeds.push({ id: idList, name: nameList, misc: miscList });
             }
         }
         else if (interaction.options.getSubcommand() === 'episodes') {
+            type = "episodes";
+            title = "List of All Episodes";
+            footer = "retrieved the episode list.";
+
             model = mongoose.model("Episodes", episodeSchema);
             const episodeList = await model.find( { guildId: interaction.guildId }).sort('id');
 
@@ -133,47 +121,74 @@ module.exports = {
                 return;
             }
 
-            let idList = "";
-            let nameList = "";
-            let threadList = "";
-            let j = -1;
-
             for (let i = 0; i < episodeList.length; i++) {
-                if (i % 10 === 0) {
-                    if (i !== 0) {
-                        embeds[j].addFields([
-                            { name: "ID", value: idList, inline: true },
-                            { name: "Name", value: nameList, inline: true },
-                            { name: "Thread", value: threadList, inline: true }
-                        ]);
-                        idList = "";
-                        nameList = "";
-                        threadList = "";
-                    }
-                    embeds.push(new VortoxEmbed(VortoxColor.DEFAULT, "List of All Episodes", 'retrieved the episode list.', interaction.member));
-                    j++;
+                if (i !== 0 && i % 10 === 0) {
+                    embeds.push({ id: idList, name: nameList, misc: miscList });
+                    idList = "";
+                    nameList = "";
+                    miscList = "";
                 }
 
                 idList += `\`${episodeList[i].id}\`\n`
                 nameList += `\`${episodeList[i].name}\`\n`
-                threadList += `[Click Here](https://discord.com/channels/${interaction.guild.id}/${episodeList[i].threadId})\n`
+                miscList += `[Click Here](https://discord.com/channels/${interaction.guild.id}/${episodeList[i].threadId})\n`
             }
 
             if (idList !== "") {
-                embeds[embeds.length - 1].addFields([
-                    { name: "ID", value: idList, inline: true },
-                    { name: "Name", value: nameList, inline: true },
-                    { name: "Thread", value: threadList, inline: true }
-                ]);
+                embeds.push({ id: idList, name: nameList, misc: miscList });
             }
         }
 
-        const embed = embeds[0];
+        const row = new ActionRowBuilder()
 
-        const pageReader = new VortoxPages(interaction, embeds, undefined, 1000 * 60 * 10);
+        row.addComponents([
+            new ButtonBuilder()
+                .setCustomId('first_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏮')
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId('prev_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏪')
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId('next_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏩')
+                .setDisabled(embeds.length === 1),
+            new ButtonBuilder()
+                .setCustomId('last_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏭')
+                .setDisabled(embeds.length === 1),
+        ])
 
-        await interaction.editReply({ embeds: [embed], ephemeral: true, components: [pageReader.getRow()] })
+        const embed = new VortoxEmbed(VortoxColor.DEFAULT, title, footer, interaction.member);
+        embed.addFields([
+            { name: "ID", value: embeds[0].id, inline: true },
+            { name: "Name", value: embeds[0].name, inline: true }
+        ]);
 
-        await pageReader.start();
+        if (type === "characters") embed.addFields({ name: "HP", value: embeds[0].misc, inline: true });
+        else if (type === "weapons") embed.addFields({ name: "Damage Type", value: embeds[0].misc, inline: true });
+        if (type === "episodes") embed.addFields({ name: "Thread", value: embeds[0].misc, inline: true });
+
+        const message = await interaction.fetchReply();
+
+        const newList = await new List({
+            messageId: message.id,
+            type: type,
+            title: title,
+            footer: footer,
+            embeds: embeds,
+            selectedIndex: 0,
+            guildId: interaction.guildId
+        })
+
+        await newList.save();
+
+        await interaction.editReply({ embeds: [embed], components: [row] })
+
     },
 };
