@@ -8,7 +8,7 @@ const {characterSchema} = require("../../models/characters");
 const {locationSchema} = require("../../models/locations");
 
 function validateIntHundred(integer) {
-    return (integer >= 0 && integer <= 100);
+    return (integer >= -100 && integer <= 100);
 }
 
 module.exports = {
@@ -316,7 +316,8 @@ module.exports = {
             let resistanceString = "";
             for (const resistance in target.game.resistances) {
                 if (resistance === "$isNew") continue;
-                if (target.game.resistances[resistance] > 0) resistanceString += `\`${resistance}: ${target.game.resistances[resistance]}\`, `
+                if (target.game.resistances[resistance] >= -100 && target.game.resistances[resistance] <= 100)
+                    resistanceString += `\`${resistance}: ${target.game.resistances[resistance]}\`, `
             }
             if (resistanceString.length > 0) {
                 resistanceString = resistanceString.slice(0, -2);
@@ -402,7 +403,7 @@ module.exports = {
 
             }
             else if (subcommand === 'resistance') {
-                const sharp = interaction.options.getInteger('shock');
+                const sharp = interaction.options.getInteger('sharp');
                 const blunt = interaction.options.getInteger('blunt');
                 const explosive = interaction.options.getInteger('explosive');
                 const plasma = interaction.options.getInteger('plasma');
@@ -413,7 +414,9 @@ module.exports = {
                 const biological = interaction.options.getInteger('biological');
                 const resistanceArray = [sharp, blunt, explosive, plasma, laser, fire, freeze, shock, biological];
 
-                for (const number in resistanceArray) {
+                for (const number of resistanceArray) {
+                    console.log(number);
+                    if (!number) continue;
                     if (!validateIntHundred(number)) {
                         const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${target.name}\``, `tried to edit ${id} in the guild database.`, interaction.member);
                         failEmbed.setDescription(`Resistances must be between 0 and 100 (inclusive)!`)
