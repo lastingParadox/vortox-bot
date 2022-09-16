@@ -4,8 +4,10 @@ const mongoose = require("mongoose");
 const { characterSchema } = require("../../models/characters");
 const { weaponSchema } = require("../../models/weapons");
 const {episodeSchema} = require("../../models/episodes");
-const {VortoxEmbed} = require("../../utilities/embeds");
-const {VortoxColor} = require("../../utilities/enums");
+const { VortoxEmbed } = require("../../utilities/embeds");
+const { VortoxColor } = require("../../utilities/enums");
+const {listSchema} = require("../../models/lists");
+const {ActionRowBuilder, ButtonBuilder, ButtonStyle} = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -28,94 +30,165 @@ module.exports = {
         ),
 
     async execute(interaction) {
+        await interaction.deferReply();
+
+        const embeds = [];
         let model;
-        let embed;
+        const List = mongoose.model("Lists", listSchema);
+        let type = "";
+        let title = "";
+        let footer = "";
+        let idList = "";
+        let nameList = "";
+        let miscList = "";
 
         if (interaction.options.getSubcommand() === 'characters') {
+            type = "characters";
+            title = "List of All Characters";
+            footer = "retrieved the character list.";
+
             model = mongoose.model("Characters", characterSchema);
             const characterList = await model.find( { "meta.guildId": interaction.guildId } ).sort('id');
 
             if (characterList.length === 0) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Character List', 'tried to retrieve the character list.', interaction.member);
                 failEmbed.setDescription("No characters exist in this server!\nUse \`character add\` to add some!");
-                await interaction.reply({ embeds: [failEmbed], ephemeral: true });
+                await interaction.editReply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
 
-            let idList = "";
-            let nameList = "";
-            let hpList = "";
+            for (let i = 0; i < characterList.length; i++) {
+                if (i !== 0 && i % 10 === 0) {
+                    embeds.push({ id: idList, name: nameList, misc: miscList });
+                    idList = "";
+                    nameList = "";
+                    miscList = "";
+                }
 
-            for (let character of characterList) {
-                idList += `\`${character.id}\`\n`
-                nameList += `\`${character.name}\`\n`
-                hpList += `\`${character.game.hp}/${character.game.maxHp}\`\n`;
+                idList += `\`${characterList[i].id}\`\n`
+                nameList += `\`${characterList[i].name}\`\n`
+                miscList += `\`${characterList[i].game.hp}/${characterList[i].game.maxHp}\`\n`;
             }
 
-            embed = new VortoxEmbed(VortoxColor.DEFAULT, "List of All Characters", 'retrieved the character list.', interaction.member);
-            embed.addFields([
-                { name: "ID", value: idList, inline: true },
-                { name: "Name", value: nameList, inline: true },
-                { name: "HP", value: hpList, inline: true }
-            ]);
+            if (idList !== "") {
+                embeds.push({ id: idList, name: nameList, misc: miscList });
+            }
         }
         else if (interaction.options.getSubcommand() === 'weapons') {
+            type = "weapons";
+            title = "List of All Weapons";
+            footer = "retrieved the weapon list.";
+
             model = mongoose.model("Weapons", weaponSchema);
             const weaponList = await model.find( { guildId: interaction.guildId }).sort('id');
 
             if (weaponList.length === 0) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Weapon List', 'tried to retrieve the weapon list.', interaction.member);
                 failEmbed.setDescription("No weapons exist in this server!\nUse \`weapon add\` to add some!");
-                await interaction.reply({ embeds: [failEmbed], ephemeral: true });
+                await interaction.editReply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
 
-            let idList = "";
-            let nameList = "";
-            let typeList = "";
+            for (let i = 0; i < weaponList.length; i++) {
+                if (i !== 0 && i % 10 === 0) {
+                    embeds.push({ id: idList, name: nameList, misc: miscList });
+                    idList = "";
+                    nameList = "";
+                    miscList = "";
+                }
 
-            for (let weapon of weaponList) {
-                idList += `\`${weapon.id}\`\n`
-                nameList += `\`${weapon.name}\`\n`
-                typeList += `\`${weapon.damageType}\`\n`;
+                idList += `\`${weaponList[i].id}\`\n`
+                nameList += `\`${weaponList[i].name}\`\n`
+                miscList += `\`${weaponList[i].damageType}\`\n`;
             }
 
-            embed = new VortoxEmbed(VortoxColor.DEFAULT, "List of All Weapons", 'retrieved the weapon list.', interaction.member);
-            embed.addFields([
-                { name: "ID", value: idList, inline: true },
-                { name: "Name", value: nameList, inline: true },
-                { name: "Damage Type", value: typeList, inline: true }
-            ]);
+            if (idList !== "") {
+                embeds.push({ id: idList, name: nameList, misc: miscList });
+            }
         }
         else if (interaction.options.getSubcommand() === 'episodes') {
+            type = "episodes";
+            title = "List of All Episodes";
+            footer = "retrieved the episode list.";
+
             model = mongoose.model("Episodes", episodeSchema);
             const episodeList = await model.find( { guildId: interaction.guildId }).sort('id');
 
             if (episodeList.length === 0) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Episode List', 'tried to retrieve the episode list.', interaction.member);
                 failEmbed.setDescription("No episodes exist in this server!\nUse \`episode start\` to start one!");
-                await interaction.reply({ embeds: [failEmbed], ephemeral: true });
+                await interaction.editReply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
 
-            let idList = "";
-            let nameList = "";
-            let threadList = "";
+            for (let i = 0; i < episodeList.length; i++) {
+                if (i !== 0 && i % 10 === 0) {
+                    embeds.push({ id: idList, name: nameList, misc: miscList });
+                    idList = "";
+                    nameList = "";
+                    miscList = "";
+                }
 
-            for (let episode of episodeList) {
-                idList += `\`${episode.id}\`\n`
-                nameList += `\`${episode.name}\`\n`
-                threadList += `[Click Here](https://discord.com/channels/${interaction.guild.id}/${episode.threadId})\n`
+                idList += `\`${episodeList[i].id}\`\n`
+                nameList += `\`${episodeList[i].name}\`\n`
+                miscList += `[Click Here](https://discord.com/channels/${interaction.guild.id}/${episodeList[i].threadId})\n`
             }
 
-            embed = new VortoxEmbed(VortoxColor.DEFAULT, "List of All Episodes", 'retrieved the episode list.', interaction.member);
-            embed.addFields([
-                { name: "ID", value: idList, inline: true },
-                { name: "Name", value: nameList, inline: true },
-                { name: "Thread", value: threadList, inline: true }
-            ]);
+            if (idList !== "") {
+                embeds.push({ id: idList, name: nameList, misc: miscList });
+            }
         }
 
-        await interaction.reply({ embeds: [embed] });
+        const row = new ActionRowBuilder()
+
+        row.addComponents([
+            new ButtonBuilder()
+                .setCustomId('first_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏮')
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId('prev_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏪')
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId('next_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏩')
+                .setDisabled(embeds.length === 1),
+            new ButtonBuilder()
+                .setCustomId('last_embed')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('⏭')
+                .setDisabled(embeds.length === 1),
+        ])
+
+        const embed = new VortoxEmbed(VortoxColor.DEFAULT, title, footer, interaction.member);
+        embed.addFields([
+            { name: "ID", value: embeds[0].id, inline: true },
+            { name: "Name", value: embeds[0].name, inline: true }
+        ]);
+
+        if (type === "characters") embed.addFields({ name: "HP", value: embeds[0].misc, inline: true });
+        else if (type === "weapons") embed.addFields({ name: "Damage Type", value: embeds[0].misc, inline: true });
+        if (type === "episodes") embed.addFields({ name: "Thread", value: embeds[0].misc, inline: true });
+
+        const message = await interaction.fetchReply();
+
+        const newList = await new List({
+            messageId: message.id,
+            type: type,
+            title: title,
+            footer: footer,
+            embeds: embeds,
+            selectedIndex: 0,
+            guildId: interaction.guildId
+        })
+
+        await newList.save();
+
+        await interaction.editReply({ embeds: [embed], components: [row] })
+
     },
 };
