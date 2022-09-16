@@ -1,9 +1,10 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { VortoxColor } = require('../../utilities/enums');
 const { EpisodeUtils } = require("../../utilities/episodeUtils");
-const {episodeSchema} = require("../../models/episodes");
+const { episodeSchema } = require("../../models/episodes");
 const mongoose = require("mongoose");
-const {VortoxEmbed} = require("../../utilities/embeds");
+const { VortoxEmbed } = require("../../utilities/embeds");
+const { ThreadChannel } = require("discord.js");
 
 function msToTime(duration) {
     let milliseconds = Math.floor((duration % 1000) / 100),
@@ -115,12 +116,17 @@ module.exports = {
                 const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode.`, interaction.member);
                 failEmbed.setDescription(`Cannot start an episode as ${thread.name} is ongoing!`);
+                await interaction.reply({embeds: [failEmbed], ephemeral: true});
+                return;
+            } else if (interaction.channel instanceof ThreadChannel) {
+                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode.`, interaction.member);
+                failEmbed.setDescription(`Cannot start an episode as this command was initiated in a thread channel!`);
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 return;
             }
 
             const sideEpisode = interaction.options.getBoolean("side_episode");
-            const numEpisodes = await Episode.countDocuments();
+            const numEpisodes = await Episode.countDocuments({ guildId: interaction.guildId });
 
             let episodeName;
             if (sideEpisode) episodeName = interaction.guild.name + " Side Episode " + (numEpisodes + 1);
@@ -213,11 +219,10 @@ module.exports = {
         }
         else if (subcommand === "leave") {
             const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
-            let exist = true;
 
             const player = currentEpisode.players.find(aPlayer => aPlayer.id === interaction.member.id);
-            if (!player) exist = false;
-            else {
+
+            if (player !== undefined) {
                 player.hasLeft = true;
                 if (player.turn === true) {
                     let index = currentEpisode.players.indexOf(player);
@@ -232,7 +237,7 @@ module.exports = {
                 }
             }
 
-            if (!exist) {
+            if (player === undefined) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Leaving Current Episode`, `tried to leave the current episode.`, interaction.member);
                 failEmbed.setDescription(`You are not part of the current episode!`);
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
@@ -278,9 +283,8 @@ module.exports = {
             thread.send("Episode unpaused!");
         }
         else if (subcommand === "stop") {
-
             const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
-            thread.send("Ending episode!");
+            thread.send("Stopping episode!");
 
             currentEpisode.name = thread.name;
             if (currentEpisode.episodeLength !== "") currentEpisode.episodeLength = msToTime(Date.now() - parseInt(currentEpisode.episodeLength));
@@ -339,7 +343,6 @@ module.exports = {
         else if (subcommand === 'info') {
             const id = interaction.options.getString("episode_id");
             const episode = await Episode.findOne({ id: id, guildId: interaction.guildId });
-
             if (!episode) {
                 console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
                 const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Retrieving \`${id}\``, `tried to find episode ${id} in the guild database.`, interaction.member);
@@ -354,13 +357,11 @@ module.exports = {
                     userString += `<@${player.id}>\n`;
             }
 
-            const thread = await interaction.guild.channels.cache.get(episode.threadId);
-
             const embed = new VortoxEmbed(VortoxColor.DEFAULT, `${episode.name}`, `got information for ${episode.name}.`, interaction.member);
             embed.setDescription(episode.description)
                 .addFields([
                     { name: "ID", value: `\`${episode.id}\``, inline: true },
-                    { name: "Thread", value: `[Click Here](https://discord.com/channels/${interaction.guild.id}/${thread.id})`, inline: true },
+                    { name: "Thread", value: `[Click Here](https://discord.com/channels/${interaction.guild.id}/${episode.threadId})`, inline: true },
                     { name: "Message Count", value: `${episode.messageCount}`, inline: true },
                     { name: "Length", value: episode.episodeLength, inline: true },
                     { name: "Players", value: userString, inline: false },
