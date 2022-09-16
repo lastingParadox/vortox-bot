@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 let listSchema = new Schema( {
+    _id: Schema.Types.ObjectId,
     messageId: { type: String, required: true },
     type: String,
     title: String,
@@ -18,4 +19,6 @@ let listSchema = new Schema( {
 
 listSchema.index({ createdAt: 1 },{ expireAfterSeconds: 3600 });
 
-module.exports = { listSchema }
+const List = mongoose.model("List", listSchema)
+
+module.exports = List;

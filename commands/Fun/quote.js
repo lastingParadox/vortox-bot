@@ -1,8 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-const mongoose = require("mongoose");
-const { characterSchema } = require("../../models/characters");
-const { locationSchema } = require("../../models/locations");
+const Character = require("../../models/characters");
+const Location = require("../../models/locations");
 
 const { VortoxColor } = require('../../utilities/enums');
 const {VortoxEmbed} = require("../../utilities/embeds");
@@ -26,8 +25,6 @@ module.exports = {
         let locationId = interaction.options.getString('location_id');
         if (locationId !== null) locationId = locationId.toLowerCase();
 
-        const Character = mongoose.model("Characters", characterSchema);
-        const Location = mongoose.model("Locations", locationSchema);
         const locationList = await Location.find();
 
         let chosenCharacter;

@@ -1,8 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { DiceRoller, RollInitializeError, InfinityError} = require('vortox-dice-parser');
 
-const mongoose = require("mongoose");
-const { weaponSchema } = require('../../models/weapons');
+const Weapon = require('../../models/weapons');
 
 const { VortoxColor } = require('../../utilities/enums');
 const { VortoxEmbed } = require("../../utilities/embeds");
@@ -128,7 +127,6 @@ module.exports = {
     async execute(interaction) {
         const id = interaction.options.getString('weapon_id').toLowerCase();
         const subcommand = interaction.options.getSubcommand();
-        const Weapon = mongoose.model('Weapons', weaponSchema);
 
         if (subcommand === "add") {
             const damage = interaction.options.getString('damage');

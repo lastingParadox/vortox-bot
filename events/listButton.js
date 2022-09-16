@@ -1,4 +1,4 @@
-const { listSchema } = require("../models/lists");
+const List = require("../models/lists");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { VortoxEmbed } = require("../utilities/embeds");
 const { VortoxColor } = require("../utilities/enums");
@@ -36,8 +36,6 @@ module.exports = {
 	name: 'interactionCreate',
 	async execute(interaction) {
 		if (!interaction.isButton()) return;
-
-		const List = mongoose.model("Lists", listSchema);
 
 		const listItem = await List.findOne({ messageId: interaction.message.id });
 		if (!listItem) {

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 let episodeSchema = new Schema( {
+    _id: Schema.Types.ObjectId,
     id: { type: String, required: true },
     name: String,
     description: String,
@@ -28,4 +29,6 @@ episodeSchema.index({
     unique: true,
 });
 
-module.exports = { episodeSchema }
+const Episode = mongoose.model("Episode", episodeSchema)
+
+module.exports = Episode;

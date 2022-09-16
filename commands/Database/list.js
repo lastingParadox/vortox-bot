@@ -1,12 +1,11 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-const mongoose = require("mongoose");
-const { characterSchema } = require("../../models/characters");
-const { weaponSchema } = require("../../models/weapons");
-const {episodeSchema} = require("../../models/episodes");
+const Character = require("../../models/characters");
+const Weapon = require("../../models/weapons");
+const Episode = require("../../models/episodes");
 const { VortoxEmbed } = require("../../utilities/embeds");
 const { VortoxColor } = require("../../utilities/enums");
-const {listSchema} = require("../../models/lists");
+const List = require("../../models/lists");
 const {ActionRowBuilder, ButtonBuilder, ButtonStyle} = require("discord.js");
 
 module.exports = {
@@ -34,7 +33,6 @@ module.exports = {
 
         const embeds = [];
         let model;
-        const List = mongoose.model("Lists", listSchema);
         let type = "";
         let title = "";
         let footer = "";
@@ -47,8 +45,7 @@ module.exports = {
             title = "List of All Characters";
             footer = "retrieved the character list.";
 
-            model = mongoose.model("Characters", characterSchema);
-            const characterList = await model.find( { "meta.guildId": interaction.guildId } ).sort('id');
+            const characterList = await Character.find( { "meta.guildId": interaction.guildId } ).sort('id');
 
             if (characterList.length === 0) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Character List', 'tried to retrieve the character list.', interaction.member);
@@ -79,8 +76,7 @@ module.exports = {
             title = "List of All Weapons";
             footer = "retrieved the weapon list.";
 
-            model = mongoose.model("Weapons", weaponSchema);
-            const weaponList = await model.find( { guildId: interaction.guildId }).sort('id');
+            const weaponList = await Weapon.find( { guildId: interaction.guildId }).sort('id');
 
             if (weaponList.length === 0) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Weapon List', 'tried to retrieve the weapon list.', interaction.member);
@@ -111,8 +107,7 @@ module.exports = {
             title = "List of All Episodes";
             footer = "retrieved the episode list.";
 
-            model = mongoose.model("Episodes", episodeSchema);
-            const episodeList = await model.find( { guildId: interaction.guildId }).sort('id');
+            const episodeList = await Episode.find( { guildId: interaction.guildId }).sort('id');
 
             if (episodeList.length === 0) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Episode List', 'tried to retrieve the episode list.', interaction.member);

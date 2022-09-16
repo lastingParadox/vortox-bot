@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { EmbedBuilder } = require('discord.js');
-const mongoose = require('mongoose');
-const { characterSchema } = require("../../models/characters");
+const Character = require("../../models/characters");
 const { VortoxColor } = require("../../utilities/enums");
 
 module.exports = {
@@ -16,8 +15,6 @@ module.exports = {
 
     async execute(interaction) {
         const id = interaction.options.getString('char_id').toLowerCase();
-        const Character = mongoose.model('Character', characterSchema);
-
         const embed = new EmbedBuilder().setTitle('Resetting')
 
         if (id === "all") {

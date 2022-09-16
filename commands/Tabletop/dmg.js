@@ -1,9 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const mongoose = require("mongoose");
-const { characterSchema } = require("../../models/characters");
-const { weaponSchema } = require("../../models/weapons");
+const Character = require("../../models/characters");
+const Weapon = require("../../models/weapons");
 
-const { DiceRoller} = require("vortox-dice-parser");
+const { DiceRoller } = require("vortox-dice-parser");
 const { VortoxColor } = require('../../utilities/enums');
 const { VortoxEmbed } = require("../../utilities/embeds");
 
@@ -66,7 +65,6 @@ module.exports = {
     async execute(interaction) {
         const targetId = interaction.options.getString("target_id");
         const damage = interaction.options.getSubcommand();
-        const Character = mongoose.model("Characters", characterSchema);
 
         let roller;
         let combatLog = "";
@@ -87,7 +85,6 @@ module.exports = {
             const weaponId = interaction.options.getString("weapon_id");
             let multiplier = interaction.options.getInteger("multiplier");
 
-            const Weapon = mongoose.model("Weapons", weaponSchema);
             const weapon = await Weapon.findOne({ id: weaponId });
 
             if (!weapon) {

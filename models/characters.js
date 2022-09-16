@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 let characterSchema = new Schema( {
+    _id: Schema.Types.ObjectId,
     id: { type: String, required: true },
     name: String,
     description: String,
@@ -48,4 +49,6 @@ characterSchema.index({
     unique: true,
 });
 
-module.exports = { characterSchema }
+const Character = mongoose.model("Character", characterSchema)
+
+module.exports = Character;

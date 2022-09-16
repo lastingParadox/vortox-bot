@@ -1,13 +1,12 @@
 const mongoose = require("mongoose");
-const {episodeSchema} = require("../models/episodes");
+const Episode = require("../models/episodes");
 
 class EpisodeUtils {
 
-    static #Episode = mongoose.model("Episodes", episodeSchema);
     static currentEpisode;
 
     static async start() {
-        this.currentEpisode = await this.#Episode.findOne({current: true});
+        this.currentEpisode = await Episode.findOne({current: true});
     }
 
     static isCurrentEpisode() {

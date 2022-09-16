@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 let weaponSchema = new Schema( {
+    _id: Schema.Types.ObjectId,
     id: { type: String, required: true, },
     name: String,
     description: String,
@@ -22,4 +23,6 @@ weaponSchema.index({
     unique: true,
 });
 
-module.exports = { weaponSchema }
+const Weapon = mongoose.model("Weapon", weaponSchema)
+
+module.exports = Weapon;

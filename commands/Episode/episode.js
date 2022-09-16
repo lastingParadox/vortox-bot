@@ -1,8 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { VortoxColor } = require('../../utilities/enums');
 const { EpisodeUtils } = require("../../utilities/episodeUtils");
-const { episodeSchema } = require("../../models/episodes");
-const mongoose = require("mongoose");
+const Episode = require("../../models/episodes");
 const { VortoxEmbed } = require("../../utilities/embeds");
 const { ThreadChannel } = require("discord.js");
 
@@ -101,7 +100,6 @@ module.exports = {
     async execute(interaction) {
 
         const subcommand = interaction.options.getSubcommand();
-        const Episode = mongoose.model("Episodes", episodeSchema)
         const currentEpisode = EpisodeUtils.currentEpisode;
 
         if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave' || subcommand === "pause" || subcommand === "unpause") && currentEpisode === null) {

@@ -1,11 +1,9 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-const mongoose = require("mongoose");
-
 const { VortoxColor } = require('../../utilities/enums');
 const { VortoxEmbed } = require("../../utilities/embeds");
-const {characterSchema} = require("../../models/characters");
-const {locationSchema} = require("../../models/locations");
+const Character = require("../../models/characters");
+const Location = require("../../models/locations");
 
 function validateIntHundred(integer) {
     return (integer >= -100 && integer <= 100);
@@ -188,7 +186,6 @@ module.exports = {
     async execute(interaction) {
         const id = interaction.options.getString('character_id').toLowerCase();
         const subcommand = interaction.options.getSubcommand();
-        const Character = mongoose.model('Characters', characterSchema);
 
         if (subcommand === "add") {
             const hp = interaction.options.getInteger('hp');
@@ -246,7 +243,6 @@ module.exports = {
         }
         else if (subcommand === 'delete') {
 
-            const Location = mongoose.model('Location', locationSchema);
             const locations = await Location.find({ guildId: interaction.guildId });
 
             const target = await Character.findOne({ id: id, 'meta.guildId': interaction.guildId });
@@ -325,7 +321,7 @@ module.exports = {
             }
             if (target.locations.length > 0) {
                 let locationString = "";
-                const locations = await mongoose.model("Locations", locationSchema).find();
+                const locations = Location.find();
                 for (let location of target.locations) {
                     locationString += "`" + locations.find(query => query.id === location).name + "`\n";
                 }
