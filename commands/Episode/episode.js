@@ -4,6 +4,7 @@ const { EpisodeUtils } = require("../../utilities/episodeUtils");
 const Episode = require("../../models/episodes");
 const { VortoxEmbed } = require("../../utilities/embeds");
 const { ThreadChannel } = require("discord.js");
+const mongoose = require("mongoose");
 
 function msToTime(duration) {
     let milliseconds = Math.floor((duration % 1000) / 100),
@@ -159,6 +160,7 @@ module.exports = {
             users[0].turn = true;
 
             const newEpisode = new Episode({
+                _id: new mongoose.Types.ObjectId(),
                 id: "episode" + (numEpisodes + 1),
                 name: episodeName,
                 description: "An episode without a curated description.",

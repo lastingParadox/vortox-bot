@@ -7,6 +7,7 @@ const { VortoxEmbed } = require("../../utilities/embeds");
 const { VortoxColor } = require("../../utilities/enums");
 const List = require("../../models/lists");
 const {ActionRowBuilder, ButtonBuilder, ButtonStyle} = require("discord.js");
+const mongoose = require("mongoose");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -172,6 +173,7 @@ module.exports = {
         const message = await interaction.fetchReply();
 
         const newList = await new List({
+            _id: new mongoose.Types.ObjectId(),
             messageId: message.id,
             type: type,
             title: title,

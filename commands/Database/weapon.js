@@ -5,6 +5,7 @@ const Weapon = require('../../models/weapons');
 
 const { VortoxColor } = require('../../utilities/enums');
 const { VortoxEmbed } = require("../../utilities/embeds");
+const mongoose = require("mongoose");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('weapon')
@@ -155,6 +156,7 @@ module.exports = {
             }
 
             const newWeapon = new Weapon( {
+                _id: new mongoose.Types.ObjectId(),
                 id: id,
                 name: (id.charAt(0).toUpperCase() + id.slice(1)),
                 description: "A weapon without a curated description.",

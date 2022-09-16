@@ -4,6 +4,7 @@ const { VortoxColor } = require('../../utilities/enums');
 const { VortoxEmbed } = require("../../utilities/embeds");
 const Character = require("../../models/characters");
 const Location = require("../../models/locations");
+const mongoose = require("mongoose");
 
 function validateIntHundred(integer) {
     return (integer >= -100 && integer <= 100);
@@ -192,6 +193,7 @@ module.exports = {
             let incorporeal = interaction.options.getBoolean('incorporeal');
             if (incorporeal === null) incorporeal = false;
             const newCharacter = new Character( {
+                _id: new mongoose.Types.ObjectId(),
                 id: id,
                 name: (id.charAt(0).toUpperCase() + id.slice(1)),
                 description: "A character without a curated description.",
