@@ -293,7 +293,7 @@ module.exports = {
                 });
         }
         else if (subcommand === 'info') {
-            const target = await Character.findOne({ id: id, 'meta.guildId': interaction.guildId });
+            const target = await Character.findOne({ id: id, 'meta.guildId': interaction.guildId }).populate('locations', 'name');
 
             if (!target) {
                 console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
@@ -322,9 +322,8 @@ module.exports = {
             }
             if (target.locations.length > 0) {
                 let locationString = "";
-                const locations = Location.find();
                 for (let location of target.locations) {
-                    locationString += "`" + locations.find(query => query.id === location).name + "`\n";
+                    locationString += "`" + location.name + "`\n";
                 }
                 fields.push({ name: "Locations", value: `${locationString}`, inline: false });
             }
