@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
+const mongoose = require("mongoose");
 const Character = require("../../models/characters");
 const Location = require("../../models/locations");
 const Quote = require("../../models/quotes");
@@ -26,10 +27,11 @@ module.exports = {
         let locationId = interaction.options.getString('location_id');
         if (locationId !== null) locationId = locationId.toLowerCase();
 
+        const location = await Location.findOne({ id: locationId });
         let chosenCharacter;
 
         if (characterId !== null && locationId !== null ) {
-            chosenCharacter = await Character.findOne({ id: characterId, locations: locationId, quoteAmount: { $gt: 0 } });
+            chosenCharacter = await Character.findOne({ id: characterId, locations: mongoose.Types.ObjectId(location._id), quoteAmount: { $gt: 0 } });
             if (chosenCharacter === null) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, 'Error Retrieving Quote', 'tried to get a quote.', interaction.member);
                 failEmbed.setDescription(`Location \`${locationId}\` does not exist for character \`${characterId}\`!`)
@@ -50,7 +52,7 @@ module.exports = {
             let characterArray;
 
             if(locationId !== null)
-                characterArray = await Character.find({ locations: locationId, quoteAmount: { $gt: 0 } });
+                characterArray = await Character.find({ locations: mongoose.Types.ObjectId(location._id), quoteAmount: { $gt: 0 } });
             else
                 characterArray = await Character.find({ quoteAmount: { $gt: 0 } });
 
@@ -64,7 +66,7 @@ module.exports = {
             let quoteCharacter;
             if (locationId !== null) {
                 quoteCharacter = await Character.aggregate([
-                    { $match: { locations: locationId, quoteAmount: { $gt: 0 } } },
+                    { $match: { locations: mongoose.Types.ObjectId(location._id), quoteAmount: { $gt: 0 } } },
                     { $group: { _id: null, amount: { $sum: "$quoteAmount" } } }
                 ]);
             }
@@ -87,7 +89,6 @@ module.exports = {
             }
         }
 
-        const location = await Location.find({ id: locationId });
         let quoteArray;
 
         if (locationId !== null)
@@ -96,7 +97,7 @@ module.exports = {
             quoteArray = await Quote.find({ speaker: chosenCharacter._id });
 
         let chosenQuote = quoteArray[Math.floor(Math.random() * quoteArray.length)];
-        let locationName = location.name;
+        await chosenQuote.populate('location');
 
         const successEmbed = new VortoxEmbed(chosenCharacter.meta.color, '', `retrieved a quote from ${chosenCharacter.name}.`, interaction.member);
         successEmbed
@@ -106,7 +107,7 @@ module.exports = {
             })
             .addFields([
                 { name: 'Quote', value: chosenQuote.quote, inline: true },
-                { name: 'Location', value: locationName, inline: true }
+                { name: 'Location', value: chosenQuote.location.name, inline: true }
             ])
 
         await interaction.reply({ embeds: [successEmbed] });
