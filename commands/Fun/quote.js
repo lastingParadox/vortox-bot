@@ -2,9 +2,10 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 
 const Character = require("../../models/characters");
 const Location = require("../../models/locations");
+const Quote = require("../../models/quotes");
 
 const { VortoxColor } = require('../../utilities/enums');
-const {VortoxEmbed} = require("../../utilities/embeds");
+const { VortoxEmbed } = require("../../utilities/embeds");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,8 +25,6 @@ module.exports = {
         if (characterId !== null) characterId = characterId.toLowerCase();
         let locationId = interaction.options.getString('location_id');
         if (locationId !== null) locationId = locationId.toLowerCase();
-
-        const locationList = await Location.find();
 
         let chosenCharacter;
 
@@ -88,22 +87,16 @@ module.exports = {
             }
         }
 
+        const location = await Location.find({ id: locationId });
         let quoteArray;
 
         if (locationId !== null)
-            quoteArray = chosenCharacter.quotes.filter(quote => quote.location === locationId);
+            quoteArray = await Quote.find({ speaker: chosenCharacter._id, location: location._id });
         else
-            quoteArray = chosenCharacter.quotes;
+            quoteArray = await Quote.find({ speaker: chosenCharacter._id });
 
         let chosenQuote = quoteArray[Math.floor(Math.random() * quoteArray.length)];
-        let locationName;
-
-        for (let location of locationList) {
-            if (chosenQuote.location === location.id) {
-                locationName = location.name;
-                break;
-            }
-        }
+        let locationName = location.name;
 
         const successEmbed = new VortoxEmbed(chosenCharacter.meta.color, '', `retrieved a quote from ${chosenCharacter.name}.`, interaction.member);
         successEmbed

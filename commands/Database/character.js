@@ -223,7 +223,6 @@ module.exports = {
                 },
 
                 locations: [],
-                quotes: [],
                 quoteAmount: 0
             });
 

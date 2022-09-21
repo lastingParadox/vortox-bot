@@ -32,7 +32,7 @@ let characterSchema = new Schema( {
         author: String
     },
 
-    locations: [String],
+    locations: [{ type: Schema.Types.ObjectId, ref: 'Location' }],
 
     quotes: [{
         quote: String,
