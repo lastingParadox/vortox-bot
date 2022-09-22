@@ -5,6 +5,7 @@ const { VortoxEmbed } = require("../../utilities/embeds");
 const Character = require("../../models/characters");
 const Location = require("../../models/locations");
 const mongoose = require("mongoose");
+const Quote = require("../../models/quotes");
 
 function validateIntHundred(integer) {
     return (integer >= -100 && integer <= 100);
@@ -256,6 +257,8 @@ module.exports = {
                 return;
             }
 
+            const quoteList = await Quote.find({ speaker: mongoose.Types.ObjectId(target._id) }).populate('location');
+
             const embedValidate = new VortoxEmbed(VortoxColor.DEFAULT, `Deleting ${target.name} Validation`, `is trying to remove character ${id} from the guild database.`, interaction.member);
             embedValidate.setDescription(`Are you sure you want to delete ${target.name} (ID: \`${id}\`)?\nRespond with \`${id}\`.`);
 
@@ -271,9 +274,10 @@ module.exports = {
                     interaction.channel.awaitMessages({filter: filter, max: 1, time: 180000, errors: ['time']})
                         .then(async collected => {
                             if (collected.first().content.toLowerCase() === id) {
-                                for (let quote of target.quotes) {
+                                for (let quote of quoteList) {
                                     let tempLocation = await locations.find(location => location.id === quote.location);
                                     tempLocation.count--;
+                                    await Quote.deleteOne({ _id: mongoose.Types.ObjectId(quote._id) });
                                 }
                                 console.log(`Removed character ${id} from the database.`)
                                 await Character.deleteOne({id: id});
@@ -437,7 +441,7 @@ module.exports = {
                 if (author !== null) target.meta.author = author.id;
             }
 
-            target.save();
+            await target.save();
             const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Editing ${target.name}`, `edited ${target.name} in the guild database.`, interaction.member);
             successEmbed.setDescription(`Successfully edited ${target.name}!`);
 
