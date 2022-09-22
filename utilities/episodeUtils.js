@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const Episode = require("../models/episodes");
 
 class EpisodeUtils {
