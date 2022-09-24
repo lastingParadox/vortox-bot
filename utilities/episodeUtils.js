@@ -9,7 +9,11 @@ class EpisodeUtils {
     }
 
     static isCurrentEpisode() {
-        return (this.currentEpisode !== null);
+        return this.currentEpisode != null;
+    }
+
+    static isCombat() {
+        return this.isCurrentEpisode() && this.currentEpisode.combat.players.length > 0
     }
 
 }

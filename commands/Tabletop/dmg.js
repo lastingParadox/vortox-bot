@@ -5,7 +5,20 @@ const Weapon = require("../../models/weapons");
 const { DiceRoller } = require("vortox-dice-parser");
 const { VortoxColor } = require('../../utilities/enums');
 const { VortoxEmbed } = require("../../utilities/embeds");
+const { EpisodeUtils } = require("../../utilities/episodeUtils");
 
+function statusString(status) {
+    switch(status) {
+        case "fire":
+            return "on fire";
+        case "poison":
+            return "poisoned";
+        case "bleed":
+            return "bleeding";
+        default:
+            return "nothing";
+    }
+}
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -54,6 +67,8 @@ module.exports = {
                             { name: 'Plasma', value: 'plasma' },
                             { name: 'Laser', value: 'laser' },
                             { name: 'Fire', value: 'fire' },
+                            { name: 'Poison', value: 'poison' },
+                            { name: 'Bleed', value: 'bleed' },
                             { name: 'Freeze', value: 'freeze' },
                             { name: 'Shock', value: 'shock' },
                             { name: 'Biological', value: 'biological' },
@@ -71,15 +86,41 @@ module.exports = {
         let totalDamage = 0;
         let weaponName;
         let damageType;
+        const doTTypes = ['fire', 'poison', 'bleed'];
 
-        let target = await Character.findOne({ id: targetId });
+        const hasDMRole = interaction.member.roles.cache.find(role => role.name === "DM");
+        const failCommandEmbed = new VortoxEmbed(VortoxColor.ERROR, "Error Using Damage Command", 'tried to damage someone.', interaction.member);
+        if (!hasDMRole && !EpisodeUtils.isCombat()) {
+            failCommandEmbed.setDescription("A combat sequence is not currently in progress and you do not have the `DM` role to use this command outside of combat!");
+            return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
+        }
+
+        let player = EpisodeUtils.currentEpisode.combat.players.filter(x => x.id === interaction.member.id);
+        for (let character of player) {
+            if (character.turn === true) {
+                player = character;
+                break;
+            }
+        }
+
+        if (!player && !hasDMRole) {
+            failCommandEmbed.setDescription("You are not currently in the combat sequence! Use `/combat join` to join in!");
+            return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
+        }
+        else if (player.turn === false && !hasDMRole) {
+            failCommandEmbed.setDescription("It is not your turn in the combat sequence!");
+            return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
+        }
+
+        let target = await Character.findOne({ id: targetId, guildId: interaction.guildId });
 
         if (!target) {
             const embed = new VortoxEmbed(VortoxColor.ERROR, `Error Damaging \`${targetId}\``, "tried to damage someone.", interaction.member);
             embed.setDescription(`Character \`${targetId}\` does not exist!`)
-            await interaction.reply({ embeds: [embed], ephemeral: true });
-            return;
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
+
+        let playerTarget = EpisodeUtils.currentEpisode.combat.players.find(x => x.character.toString() === target._id.toString());
 
         if (damage === 'weapon') {
             const weaponId = interaction.options.getString("weapon_id");
@@ -111,7 +152,9 @@ module.exports = {
                 return;
             }
 
-            if (multiplier === null) multiplier = 1;
+            let additionalDoT = 0;
+
+            if (multiplier == null) multiplier = 1;
 
             for (let i = 0; i < multiplier; i++) {
                 roller = new DiceRoller(weapon.damage)
@@ -119,6 +162,7 @@ module.exports = {
                     combatLog += `Critical Hit! ${weapon.name} is rolled again!\n`
                     let temp = new DiceRoller(weapon.damage);
                     totalDamage += temp.getTotal();
+                    additionalDoT++;
                 }
                 if (roller.getTotal() === roller.getMin()) {
                     combatLog += `Critical Miss! ${weapon.name}'s damage is negated!\n`
@@ -127,6 +171,14 @@ module.exports = {
                     totalDamage += roller.getTotal();
                 }
             }
+
+            if (doTTypes.includes(damageType.toLowerCase()) && playerTarget) {
+                playerTarget.damageOverTime.status = statusString(damageType.toLowerCase());
+                playerTarget.damageOverTime.damageRoll = weapon.damage;
+                playerTarget.damageOverTime.turnsLeft = 3 + additionalDoT;
+                await EpisodeUtils.currentEpisode.save();
+            }
+
         }
         else {
             const rollExpression = interaction.options.getString('expression');
@@ -144,6 +196,14 @@ module.exports = {
             }
 
             totalDamage = roller.getTotal();
+
+            if (doTTypes.includes(damageType.toLowerCase()) && playerTarget) {
+                playerTarget.damageOverTime.status = statusString(damageType.toLowerCase());
+                playerTarget.damageOverTime.damageRoll = rollExpression;
+                playerTarget.damageOverTime.turnsLeft = 3;
+                await EpisodeUtils.currentEpisode.save();
+            }
+
         }
 
         if (target.game.incorporeal && damageType !== 'incorporeal' && totalDamage >= 0) {
@@ -157,7 +217,8 @@ module.exports = {
         const successEmbed = new VortoxEmbed(VortoxColor.SUCCESS, `Damaging ${target.name}`, `damaged ${target.name}.`, interaction.member)
 
         if (totalDamage > 0)
-            combatLog += `${weaponName} hits for \`${totalDamage}\` damage!\n`;
+            if (damage === 'weapon') combatLog += `${weaponName} hits for \`${totalDamage}\` damage!\n`;
+            else combatLog += `The roll hits for \`${totalDamage}\` damage!\n`;
         else if (totalDamage < 0) {
             successEmbed.setTitle(`Healing ${target.name}`).setFooter(`healed ${target.name}.`);
             combatLog += `${target.name} is healed for \`${Math.abs(totalDamage)}\` damage!\n`;

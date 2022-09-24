@@ -73,12 +73,12 @@ module.exports = {
             for (let player of episode.players) {
                 if (player.id !== "DM") {
                     if (player.turn === false)
-                        userString += `🟩 <@${player.id}>\n`;
+                        userString += `🟦 <@${player.id}>\n`;
                     else
                         userString += `✅ <@${player.id}>\n`;
                 } else {
                     if (player.turn === false)
-                        userString += `🟩 DM\n`;
+                        userString += `🟦 DM\n`;
                     else
                         userString += `✅ DM\n`;
                 }

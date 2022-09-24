@@ -8,7 +8,7 @@ module.exports = {
         if (!command || !EpisodeUtils.isCurrentEpisode() || interaction.channel.id !== EpisodeUtils.currentEpisode.threadId)
             return;
 
-        if (command.data.name !== "8ball" && command.data.name !== "dmg" && command.data.name !== "choose" && command.data.name !== "roll") {
+        if (command.data.name !== "8ball" && command.data.name !== "choose" && command.data.name !== "roll") {
             return;
         }
 
