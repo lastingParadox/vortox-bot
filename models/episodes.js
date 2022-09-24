@@ -19,12 +19,20 @@ let episodeSchema = new Schema( {
     messageCount: Number,
     episodeLength: String,
 
-    combat: [{
-        id: String,
-        name: String,
-        turn: Boolean,
-        character: { type: Schema.Types.ObjectId, ref: 'Character' }
-    }],
+    combat: {
+        players: [{
+            id: String,
+            name: String,
+            turn: Boolean,
+            character: { type: Schema.Types.ObjectId, ref: 'Character' },
+            damageOverTime: {
+                status: String,
+                damageRoll: String,
+                turnsLeft: Number
+            },
+        }],
+        turn: Number
+    },
 
     guildId: String
 })
