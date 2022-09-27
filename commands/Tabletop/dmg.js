@@ -160,7 +160,10 @@ module.exports = {
                 roller = new DiceRoller(weapon.damage)
                 if (roller.getTotal() === roller.getMax()) {
                     combatLog += `Critical Hit! ${weapon.name} is rolled again!\n`
-                    let temp = new DiceRoller(weapon.damage);
+                    let additionalDamage = weapon.damage;
+                    if (weapon.damage.includes('+'))
+                        additionalDamage = additionalDamage.split('+')[0]
+                    let temp = new DiceRoller(additionalDamage);
                     totalDamage += temp.getTotal();
                     additionalDoT++;
                 }

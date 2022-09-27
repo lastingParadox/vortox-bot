@@ -82,6 +82,11 @@ module.exports = {
                 }
             }
 
+            let userNick = interaction.member.displayName;
+            if (userNick.charAt(userNick.length - 1) === '🎱') userNick = userNick + '⚔';
+            else userNick = userNick + ' ⚔';
+            await EpisodeUtils.changeNickname(interaction, interaction.member, userNick);
+
             EpisodeUtils.currentEpisode.combat.players.push(player);
             EpisodeUtils.currentEpisode.combat.turn = 1;
 
@@ -159,7 +164,7 @@ module.exports = {
         }
         else if (subcommand === "stop") {
 
-            EpisodeUtils.currentEpisode.combat = {};
+            EpisodeUtils.currentEpisode.combat = { players: [], turn: 0 };
             await EpisodeUtils.currentEpisode.save();
             let embed = new VortoxEmbed(VortoxColor.DEFAULT, "Stopping Combat", "stopped the current combat sequence", interaction.member);
             embed.setDescription("Stopped the combat sequence.");

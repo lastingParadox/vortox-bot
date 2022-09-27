@@ -26,10 +26,21 @@ module.exports = {
             currentEpisode.turnCount++;
 
         user.turn = false;
+        let nick = interaction.member.displayName.replace('🎱', '');
+        if (nick.charAt(nick.length - 1) === ' ') nick = nick.slice(0, nick.length - 1);
+
+        await EpisodeUtils.changeNickname(interaction, interaction.member, nick);
 
         for (let i = 1; i <= currentEpisode.players.length; i++) {
             let temp = currentEpisode.players[(currentEpisode.players.indexOf(user) + i) % currentEpisode.players.length]
             if (temp.hasLeft !== true) {
+                let discordUser = await interaction.guild.members.cache.get(temp.id);
+                let userNick = discordUser.displayName;
+
+                if (userNick.charAt(userNick.length - 1) === '⚔') userNick = userNick.slice(0, userNick.length - 1) + '🎱⚔';
+                else userNick = userNick + " 🎱";
+
+                await EpisodeUtils.changeNickname(interaction, discordUser, userNick);
                 temp.turn = true;
                 break;
             }

@@ -58,9 +58,20 @@ module.exports = {
         }
 
         player.turn = false;
+        let nick = interaction.member.displayName.replace('⚔', '');
+        if (nick.charAt(nick.length - 1) === ' ') nick = nick.slice(0, nick.length - 1);
+
+        await EpisodeUtils.changeNickname(interaction, interaction.member, nick);
 
         let temp = combatSequence.players[(combatSequence.players.indexOf(player) + 1) % combatSequence.players.length]
         temp.turn = true;
+
+        let discordUser = await interaction.guild.members.cache.get(temp.id);
+        let userNick = discordUser.displayName;
+
+        if (userNick.charAt(userNick.length - 1) === '🎱') userNick = userNick + '⚔';
+        else userNick = userNick + ' ⚔';
+        await EpisodeUtils.changeNickname(interaction, discordUser, userNick);
 
         await EpisodeUtils.currentEpisode.save();
     },
