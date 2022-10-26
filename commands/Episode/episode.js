@@ -156,9 +156,10 @@ module.exports = {
 
             users[0].turn = true;
 
-            let userNick = interaction.member.displayName;
+            let firstUser = await interaction.guild.members.cache.get(users[0].id);
+            let userNick = firstUser.displayName;
             userNick = userNick + ' 🎱';
-            await EpisodeUtils.changeNickname(interaction, interaction.member, userNick)
+            await EpisodeUtils.changeNickname(interaction, firstUser, userNick)
 
             const newEpisode = new Episode({
                 _id: new mongoose.Types.ObjectId(),

@@ -26,14 +26,17 @@ module.exports = {
             currentEpisode.turnCount++;
 
         user.turn = false;
-        let nick = interaction.member.displayName.replace('🎱', '');
-        if (nick.charAt(nick.length - 1) === ' ') nick = nick.slice(0, nick.length - 1);
+        if (user.id !== "DM") {
+            let nick = interaction.member.displayName.replace('🎱', '');
+            if (nick.charAt(nick.length - 1) === ' ') nick = nick.slice(0, nick.length - 1);
 
-        await EpisodeUtils.changeNickname(interaction, interaction.member, nick);
+            await EpisodeUtils.changeNickname(interaction, interaction.member, nick);
+        }
 
         for (let i = 1; i <= currentEpisode.players.length; i++) {
             let temp = currentEpisode.players[(currentEpisode.players.indexOf(user) + i) % currentEpisode.players.length]
-            if (temp.hasLeft !== true) {
+            console.log(temp);
+            if (temp.hasLeft !== true && temp.id !== 'DM') {
                 let discordUser = await interaction.guild.members.cache.get(temp.id);
                 let userNick = discordUser.displayName;
 
