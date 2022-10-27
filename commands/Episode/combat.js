@@ -45,8 +45,10 @@ module.exports = {
         let id = interaction.options.getString('character_id')
         if (id) id = id.toLowerCase();
 
+        let currentEpisode = EpisodeUtils.currentEpisode(interaction.guildId);
+
         if (subcommand === "join" || subcommand === "turn" || subcommand === "stop")
-            if (!EpisodeUtils.isCombat()) {
+            if (!EpisodeUtils.isCombat(interaction.guildId)) {
                 const embed = new VortoxEmbed(VortoxColor.ERROR, "Error Accessing Combat Command", "tried to do a command.", interaction.member);
                 embed.setDescription("There is no ongoing combat sequence!")
                 await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -54,7 +56,7 @@ module.exports = {
             }
 
         if (subcommand === "start") {
-            if (EpisodeUtils.isCombat()) {
+            if (EpisodeUtils.isCombat(interaction.guildId)) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Error Starting Combat", "tried to start a combat sequence.", interaction.member);
                 failEmbed.setDescription("There is already an ongoing combat sequence!")
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
@@ -87,10 +89,10 @@ module.exports = {
             else userNick = userNick + ' ⚔';
             await EpisodeUtils.changeNickname(interaction, interaction.member, userNick);
 
-            EpisodeUtils.currentEpisode.combat.players.push(player);
-            EpisodeUtils.currentEpisode.combat.turn = 1;
+            currentEpisode.combat.players.push(player);
+            currentEpisode.combat.turn = 1;
 
-            await EpisodeUtils.currentEpisode.save();
+            await currentEpisode.save();
 
             const embed = new VortoxEmbed(VortoxColor.DEFAULT, "Starting Combat", "initiated a combat sequence.", interaction.member);
             embed.setDescription(`${character.name} started combat!`);
@@ -107,7 +109,7 @@ module.exports = {
                 return;
             }
 
-            if (EpisodeUtils.currentEpisode.combat.players.find(x => x.character.toString() === character._id.toString())) {
+            if (currentEpisode.combat.players.find(x => x.character.toString() === character._id.toString())) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Error Joining Combat", "tried to join a combat sequence.", interaction.member);
                 failEmbed.setDescription(`Character \`${id}\` is already in the combat sequence!`)
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });
@@ -126,9 +128,9 @@ module.exports = {
                 }
             }
 
-            EpisodeUtils.currentEpisode.combat.players.push(player);
+            currentEpisode.combat.players.push(player);
 
-            await EpisodeUtils.currentEpisode.save();
+            await currentEpisode.save();
 
             const embed = new VortoxEmbed(VortoxColor.DEFAULT, "Joining Combat", "joined the ongoing combat sequence.", interaction.member);
             embed.setDescription(`${character.name} joined combat!`);
@@ -137,16 +139,16 @@ module.exports = {
         }
         else if (subcommand === "turn") {
 
-            await EpisodeUtils.currentEpisode.populate('combat.players.character');
+            await currentEpisode.populate('combat.players.character');
 
             const embed = new VortoxEmbed(VortoxColor.DEFAULT, "Combat Turn", `asked who has the turn currently.`, interaction.member);
-            let player = EpisodeUtils.currentEpisode.combat.players.find(x => x.turn === true);
+            let player = currentEpisode.combat.players.find(x => x.turn === true);
             embed.setDescription(`It's <@${player.id}>'s (as \`${player.character.name}\`) turn!`);
 
             return interaction.reply({ embeds: [embed] });
         }
         else if (subcommand === "list") {
-            let populatedPlayers = await EpisodeUtils.currentEpisode.populate('combat.players.character');
+            let populatedPlayers = await currentEpisode.populate('combat.players.character');
             populatedPlayers = populatedPlayers.combat;
 
             const embed = new VortoxEmbed(VortoxColor.DEFAULT, "Combat Turn List", "got the turn list.", interaction.member);
@@ -164,8 +166,8 @@ module.exports = {
         }
         else if (subcommand === "stop") {
 
-            EpisodeUtils.currentEpisode.combat = { players: [], turn: 0 };
-            await EpisodeUtils.currentEpisode.save();
+            currentEpisode.combat = { players: [], turn: 0 };
+            await currentEpisode.save();
             let embed = new VortoxEmbed(VortoxColor.DEFAULT, "Stopping Combat", "stopped the current combat sequence", interaction.member);
             embed.setDescription("Stopped the combat sequence.");
             return interaction.reply({ embeds: [embed] });

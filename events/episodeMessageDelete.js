@@ -2,12 +2,14 @@ const { EpisodeUtils } = require("../utilities/episodeUtils");
 module.exports = {
     name: 'messageDelete',
     async execute(message) {
-        if (EpisodeUtils.isCurrentEpisode() === false || message.channel.id !== EpisodeUtils.currentEpisode.threadId || message.author.bot)
+        let currentEpisode = EpisodeUtils.currentEpisode(message.guildId);
+
+        if (currentEpisode == null || message.channel.id !== currentEpisode.threadId || message.author.bot)
             return;
 
-        EpisodeUtils.currentEpisode.messageCount -= 1;
+        currentEpisode.messageCount -= 1;
 
-        let users = EpisodeUtils.currentEpisode.players;
+        let users = currentEpisode.players;
 
         for (let user of users) {
             if (message.author.id === user.id) {
@@ -16,6 +18,6 @@ module.exports = {
             }
         }
 
-        EpisodeUtils.currentEpisode.save();
+        currentEpisode.save();
     },
 };

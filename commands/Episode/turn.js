@@ -20,8 +20,9 @@ module.exports = {
     async execute(interaction) {
         const subcommand = interaction.options.getSubcommand();
         let embed;
+        let currentEpisode = EpisodeUtils.currentEpisode(interaction.guildId);
 
-        if (!EpisodeUtils.isCurrentEpisode()) {
+        if (currentEpisode == null) {
             const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, interaction.member);
             failEmbed.setDescription(`There is no episode currently in progress!`);
             await interaction.reply({ embeds: [failEmbed], ephemeral: true });
@@ -30,7 +31,7 @@ module.exports = {
 
         if (subcommand === 'show') {
 
-            const userList = EpisodeUtils.currentEpisode.players;
+            const userList = currentEpisode.players;
             const user = userList.find(x => x.turn === true);
 
             embed = new VortoxEmbed(VortoxColor.DEFAULT, "Episode Turn", `asked who has the turn currently.`, interaction.member);
@@ -40,13 +41,13 @@ module.exports = {
         }
 
         else if (subcommand === 'skip') {
-            const userList = EpisodeUtils.currentEpisode.players;
+            const userList = currentEpisode.players;
             const user = userList.find(x => x.turn === true);
             let newUser;
 
             let index = userList.indexOf(user);
             if (index === userList.length - 1)
-                EpisodeUtils.currentEpisode.turnCount++;
+                currentEpisode.turnCount++;
 
             for (let i = 1; i <= userList.length; i++) {
                 let newPlayer = userList[(index + i) % userList.length];
@@ -59,7 +60,7 @@ module.exports = {
 
             user.turn = false;
 
-            await EpisodeUtils.currentEpisode.save();
+            await currentEpisode.save();
 
             embed = new VortoxEmbed(VortoxColor.DEFAULT, "Skipping Turn", `skipped ${newUser.name}'s turn.`, interaction.member);
             if (newUser.id === "DM")
@@ -67,10 +68,9 @@ module.exports = {
             else embed.setDescription(`Skipped <@${user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
         }
         else if (subcommand === 'list') {
-            const episode = EpisodeUtils.currentEpisode;
 
             let userString = "";
-            for (let player of episode.players) {
+            for (let player of currentEpisode.players) {
                 if (player.id !== "DM") {
                     if (player.turn === false)
                         userString += `🟦 <@${player.id}>\n`;
@@ -82,7 +82,6 @@ module.exports = {
                     else
                         userString += `✅ DM\n`;
                 }
-
             }
 
             embed = new VortoxEmbed(VortoxColor.DEFAULT, "Turn List", `got the turn list.`, interaction.member);

@@ -5,14 +5,17 @@ module.exports = {
     async execute(interaction, client) {
         if (!interaction.isCommand() || interaction.ephemeral) return;
         const command = client.commands.get(interaction.commandName);
-        if (!command || !EpisodeUtils.isCurrentEpisode() || interaction.channel.id !== EpisodeUtils.currentEpisode.threadId)
+
+        if (!command) return
+
+        const currentEpisode = EpisodeUtils.isCurrentEpisode(interaction.guildId);
+
+        if (currentEpisode == null || interaction.channel.id !== currentEpisode.threadId)
             return;
 
         if (command.data.name !== "8ball" && command.data.name !== "choose" && command.data.name !== "roll") {
             return;
         }
-
-        const currentEpisode = EpisodeUtils.currentEpisode;
 
         const user = currentEpisode.players.find(x => x.turn === true);
 
@@ -49,6 +52,6 @@ module.exports = {
             }
         }
 
-        await EpisodeUtils.currentEpisode.save();
+        await currentEpisode.save();
     },
 };

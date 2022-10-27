@@ -101,16 +101,16 @@ module.exports = {
     async execute(interaction) {
 
         const subcommand = interaction.options.getSubcommand();
-        const currentEpisode = EpisodeUtils.currentEpisode;
+        const currentEpisode = EpisodeUtils.currentEpisode(interaction.guildId)
 
-        if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave' || subcommand === "pause" || subcommand === "unpause") && currentEpisode === null) {
+        if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave' || subcommand === "pause" || subcommand === "unpause") && currentEpisode == null) {
             const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, interaction.member);
             failEmbed.setDescription(`There is no episode currently in progress!`);
             return interaction.reply({ embeds: [failEmbed], ephemeral: true });
         }
 
         if (subcommand === "start") {
-            if (currentEpisode !== null) {
+            if (currentEpisode != null) {
                 const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode.`, interaction.member);
                 failEmbed.setDescription(`Cannot start an episode as ${thread.name} is ongoing!`);
@@ -177,7 +177,6 @@ module.exports = {
 
             try {
                 await newEpisode.save();
-                EpisodeUtils.currentEpisode = newEpisode;
                 console.log(`Added episode ${newEpisode.id} to the database.`);
             } catch (err) {
                 console.log(`Id matching ${newEpisode.id} already exists in the ${interaction.guildId} database, not adding new document.`);
@@ -283,7 +282,7 @@ module.exports = {
             thread.send("Episode unpaused!");
         }
         else if (subcommand === "stop") {
-            if (EpisodeUtils.isCombat()) {
+            if (EpisodeUtils.isCombat(interaction.guildId)) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Cannot Stop Current Episode`, `tried to stop the current episode.`, interaction.member);
                 failEmbed.setDescription(`You cannot stop the episode as a combat sequence is ongoing!`);
                 return interaction.reply({ embeds: [failEmbed], ephemeral: true });
@@ -298,8 +297,6 @@ module.exports = {
             currentEpisode.current = false;
 
             await currentEpisode.save();
-
-            EpisodeUtils.currentEpisode = null;
 
             const successEmbed = new VortoxEmbed(VortoxColor.DEFAULT, `Stopping Current Episode`, `stopped the current episode.`, interaction.member)
             successEmbed.setDescription(`Ended Episode \`${thread.name}\``);
