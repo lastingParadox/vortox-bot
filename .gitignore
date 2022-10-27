@@ -1,4 +1,5 @@
 node_modules/
 .idea/
 .env
-items/*
+8ball.json
+status.json
