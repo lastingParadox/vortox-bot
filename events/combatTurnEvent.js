@@ -24,7 +24,7 @@ module.exports = {
         const command = client.commands.get(interaction.commandName);
         if (!command) return
 
-        const currentEpisode = EpisodeUtils.isCurrentEpisode(interaction.guildId);
+        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
 
         if (!command || currentEpisode == null || interaction.channel.id !== currentEpisode.threadId || !EpisodeUtils.isCombat(interaction.guildId))
             return;
@@ -75,6 +75,6 @@ module.exports = {
         else userNick = userNick + ' ⚔';
         await EpisodeUtils.changeNickname(interaction, discordUser, userNick);
 
-        await EpisodeUtils.currentEpisode.save();
+        await currentEpisode.save();
     },
 };

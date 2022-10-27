@@ -101,7 +101,7 @@ module.exports = {
     async execute(interaction) {
 
         const subcommand = interaction.options.getSubcommand();
-        const currentEpisode = EpisodeUtils.currentEpisode(interaction.guildId)
+        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
 
         if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave' || subcommand === "pause" || subcommand === "unpause") && currentEpisode == null) {
             const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, interaction.member);

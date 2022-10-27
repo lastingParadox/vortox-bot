@@ -45,10 +45,10 @@ module.exports = {
         let id = interaction.options.getString('character_id')
         if (id) id = id.toLowerCase();
 
-        let currentEpisode = EpisodeUtils.currentEpisode(interaction.guildId);
+        let currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
 
         if (subcommand === "join" || subcommand === "turn" || subcommand === "stop")
-            if (!EpisodeUtils.isCombat(interaction.guildId)) {
+            if (!(await EpisodeUtils.isCombat(interaction.guildId))) {
                 const embed = new VortoxEmbed(VortoxColor.ERROR, "Error Accessing Combat Command", "tried to do a command.", interaction.member);
                 embed.setDescription("There is no ongoing combat sequence!")
                 await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -56,7 +56,7 @@ module.exports = {
             }
 
         if (subcommand === "start") {
-            if (EpisodeUtils.isCombat(interaction.guildId)) {
+            if (await EpisodeUtils.isCombat(interaction.guildId)) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Error Starting Combat", "tried to start a combat sequence.", interaction.member);
                 failEmbed.setDescription("There is already an ongoing combat sequence!")
                 await interaction.reply({ embeds: [failEmbed], ephemeral: true });

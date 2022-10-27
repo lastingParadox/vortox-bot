@@ -90,12 +90,12 @@ module.exports = {
 
         const hasDMRole = interaction.member.roles.cache.find(role => role.name === "DM");
         const failCommandEmbed = new VortoxEmbed(VortoxColor.ERROR, "Error Using Damage Command", 'tried to damage someone.', interaction.member);
-        if (!hasDMRole && !EpisodeUtils.isCombat(interaction.guildId)) {
+        if (!hasDMRole && !(await EpisodeUtils.isCombat(interaction.guildId))) {
             failCommandEmbed.setDescription("A combat sequence is not currently in progress and you do not have the `DM` role to use this command outside of combat!");
             return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
         }
 
-        let currentEpisode = EpisodeUtils.currentEpisode(interaction.guildId)
+        let currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId)
 
         let player = currentEpisode.combat.players.filter(x => x.id === interaction.member.id);
         for (let character of player) {

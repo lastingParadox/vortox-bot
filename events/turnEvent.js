@@ -8,7 +8,7 @@ module.exports = {
 
         if (!command) return
 
-        const currentEpisode = EpisodeUtils.isCurrentEpisode(interaction.guildId);
+        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
 
         if (currentEpisode == null || interaction.channel.id !== currentEpisode.threadId)
             return;

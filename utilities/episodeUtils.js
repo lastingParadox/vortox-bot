@@ -13,12 +13,12 @@ class EpisodeUtils {
     }
 
     static async isCurrentEpisode(guildId) {
-        let currentEpisode = this.currentEpisode(guildId);
+        let currentEpisode = await this.currentEpisode(guildId);
         return currentEpisode != null;
     }
 
     static async isCombat(guildId) {
-        let currentEpisode = this.currentEpisode(guildId);
+        let currentEpisode = await this.currentEpisode(guildId);
         return currentEpisode != null && currentEpisode.combat.players.length > 0
     }
 
