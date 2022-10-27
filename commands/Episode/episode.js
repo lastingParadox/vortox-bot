@@ -282,7 +282,7 @@ module.exports = {
             thread.send("Episode unpaused!");
         }
         else if (subcommand === "stop") {
-            if (EpisodeUtils.isCombat(interaction.guildId)) {
+            if (await EpisodeUtils.isCombat(interaction.guildId)) {
                 const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Cannot Stop Current Episode`, `tried to stop the current episode.`, interaction.member);
                 failEmbed.setDescription(`You cannot stop the episode as a combat sequence is ongoing!`);
                 return interaction.reply({ embeds: [failEmbed], ephemeral: true });
