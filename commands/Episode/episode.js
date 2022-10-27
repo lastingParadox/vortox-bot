@@ -103,10 +103,9 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
         const currentEpisode = EpisodeUtils.currentEpisode;
 
-        if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave' || subcommand === "pause" || subcommand === "unpause") && currentEpisode === null) {
-            const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, interaction.member);
-            failEmbed.setDescription(`There is no episode currently in progress!`);
-            return interaction.reply({ embeds: [failEmbed], ephemeral: true });
+        if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave' || subcommand === "pause" || subcommand === "unpause")) {
+            const failEmbed = EpisodeUtils.checkEpisodeEmbed(interaction.member);
+            if (failEmbed) return interaction.reply({ embeds: [failEmbed], ephemeral: true });
         }
 
         if (subcommand === "start") {

@@ -21,12 +21,8 @@ module.exports = {
         const subcommand = interaction.options.getSubcommand();
         let embed;
 
-        if (!EpisodeUtils.isCurrentEpisode()) {
-            const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, interaction.member);
-            failEmbed.setDescription(`There is no episode currently in progress!`);
-            await interaction.reply({ embeds: [failEmbed], ephemeral: true });
-            return;
-        }
+        const failEmbed = EpisodeUtils.checkEpisodeEmbed(interaction.member);
+        if (failEmbed) return interaction.reply({ embeds: [failEmbed], ephemeral: true });
 
         if (subcommand === 'show') {
 

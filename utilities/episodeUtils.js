@@ -1,6 +1,8 @@
 const Episode = require("../models/episodes");
 const { MissingPermissionError, OwnerError } = require("./errors");
 const { PermissionsBitField } = require("discord.js");
+const {VortoxEmbed} = require("./embeds");
+const {VortoxColor} = require("./enums");
 
 class EpisodeUtils {
 
@@ -16,6 +18,15 @@ class EpisodeUtils {
 
     static isCombat() {
         return this.isCurrentEpisode() && this.currentEpisode.combat.players.length > 0
+    }
+
+    static checkEpisodeEmbed(member) {
+        if (!this.isCurrentEpisode()) {
+            let failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, member);
+            failEmbed.setDescription(`There is no episode currently in progress!`);
+            return failEmbed;
+        }
+        return null;
     }
 
     static async changeNickname(interaction, guildMember, nick) {
