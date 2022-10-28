@@ -22,14 +22,16 @@ module.exports = {
     async execute(interaction, client) {
         if (!interaction.isCommand() || interaction.ephemeral) return;
         const command = client.commands.get(interaction.commandName);
-        if (!command || !EpisodeUtils.isCurrentEpisode() || interaction.channel.id !== EpisodeUtils.currentEpisode.threadId || !EpisodeUtils.isCombat())
+        if (!command) return
+
+        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
+
+        if (!command || currentEpisode == null || interaction.channel.id !== currentEpisode.threadId || !EpisodeUtils.isCombat(interaction.guildId))
             return;
 
-        if (command.data.name !== "dmg" && command.data.name !== "heal") {
-            return;
-        }
+        if (command.data.name !== "dmg" && command.data.name !== "heal") return;
 
-        const combatSequence = EpisodeUtils.currentEpisode.combat;
+        const combatSequence = currentEpisode.combat;
 
         const player = combatSequence.players.find(x => x.turn === true);
 
@@ -73,6 +75,6 @@ module.exports = {
         else userNick = userNick + ' ⚔';
         await EpisodeUtils.changeNickname(interaction, discordUser, userNick);
 
-        await EpisodeUtils.currentEpisode.save();
+        await currentEpisode.save();
     },
 };

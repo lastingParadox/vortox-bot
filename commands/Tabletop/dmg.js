@@ -90,12 +90,14 @@ module.exports = {
 
         const hasDMRole = interaction.member.roles.cache.find(role => role.name === "DM");
         const failCommandEmbed = new VortoxEmbed(VortoxColor.ERROR, "Error Using Damage Command", 'tried to damage someone.', interaction.member);
-        if (!hasDMRole && !EpisodeUtils.isCombat()) {
+        if (!hasDMRole && !(await EpisodeUtils.isCombat(interaction.guildId))) {
             failCommandEmbed.setDescription("A combat sequence is not currently in progress and you do not have the `DM` role to use this command outside of combat!");
             return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
         }
 
-        let player = EpisodeUtils.currentEpisode.combat.players.filter(x => x.id === interaction.member.id);
+        let currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId)
+
+        let player = currentEpisode.combat.players.filter(x => x.id === interaction.member.id);
         for (let character of player) {
             if (character.turn === true) {
                 player = character;
@@ -120,7 +122,7 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        let playerTarget = EpisodeUtils.currentEpisode.combat.players.find(x => x.character.toString() === target._id.toString());
+        let playerTarget = currentEpisode.combat.players.find(x => x.character.toString() === target._id.toString());
 
         if (damage === 'weapon') {
             const weaponId = interaction.options.getString("weapon_id");
@@ -179,7 +181,7 @@ module.exports = {
                 playerTarget.damageOverTime.status = statusString(damageType.toLowerCase());
                 playerTarget.damageOverTime.damageRoll = weapon.damage;
                 playerTarget.damageOverTime.turnsLeft = 3 + additionalDoT;
-                await EpisodeUtils.currentEpisode.save();
+                await currentEpisode.save();
             }
 
         }
@@ -204,7 +206,7 @@ module.exports = {
                 playerTarget.damageOverTime.status = statusString(damageType.toLowerCase());
                 playerTarget.damageOverTime.damageRoll = rollExpression;
                 playerTarget.damageOverTime.turnsLeft = 3;
-                await EpisodeUtils.currentEpisode.save();
+                await currentEpisode.save();
             }
 
         }
