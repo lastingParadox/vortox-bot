@@ -8,45 +8,60 @@ module.exports = {
 
         if (!command) return
 
-        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
+        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId)
+            .populate({ path: 'user', populate: { path: 'character'}});
 
         if (currentEpisode == null || interaction.channel.id !== currentEpisode.threadId)
             return;
 
-        if (command.data.name !== "8ball" && command.data.name !== "choose" && command.data.name !== "roll") {
-            return;
+        if (currentEpisode.mode === "roleplay") {
+            if (command.data.name !== "8ball" && command.data.name !== "choose" && command.data.name !== "roll") {
+                return;
+            }
+        }
+        else if (currentEpisode.mode === "combat") {
+            if (command.data.name !== "8ball" && command.data.name !== "choose" && command.data.name !== "dmg") {
+                return;
+            }
         }
 
-        const user = currentEpisode.players.find(x => x.turn === true);
+        const player = currentEpisode.players.find(x => x.turn === true);
 
-        if (user.id === "DM") {
-            if (interaction.member.roles.cache.find(role => role.id === user.role) === null)
+        if (player.user == null) {
+            if (interaction.member.roles.cache.find(role => role.id === player.role) === null)
                 return;
         }
-        else if (user.id !== interaction.member.id) return;
+        else if (player.user.id !== interaction.member.id) return;
 
-        if (currentEpisode.players.indexOf(user) === currentEpisode.players.length - 1)
+        if (currentEpisode.players.indexOf(player) === currentEpisode.players.length - 1)
             currentEpisode.turnCount++;
 
-        user.turn = false;
-        if (user.id !== "DM") {
-            let nick = interaction.member.displayName.replace('🎱', '');
+        player.turn = false;
+        if (player.user != null) {
+            let nick = ""
+            if (currentEpisode.mode === "roleplay")
+                nick = interaction.member.displayName.replace('🎱', '');
+            else if (currentEpisode.mode === "combat")
+                nick = interaction.member.displayName.replace('✊', '');
+
             if (nick.charAt(nick.length - 1) === ' ') nick = nick.slice(0, nick.length - 1);
 
             await EpisodeUtils.changeNickname(interaction, interaction.member, nick);
         }
 
         for (let i = 1; i <= currentEpisode.players.length; i++) {
-            let temp = currentEpisode.players[(currentEpisode.players.indexOf(user) + i) % currentEpisode.players.length]
+            let temp = currentEpisode.players[(currentEpisode.players.indexOf(player) + i) % currentEpisode.players.length]
             console.log(temp);
-            if (temp.hasLeft !== true && temp.id !== 'DM') {
-                let discordUser = await interaction.guild.members.cache.get(temp.id);
-                let userNick = discordUser.displayName;
+            if (!temp.hasLeft) {
+                if (temp.user != null) {
+                    let discordUser = await interaction.guild.members.cache.get(temp.user.id);
+                    let userNick = discordUser.displayName;
 
-                if (userNick.charAt(userNick.length - 1) === '⚔') userNick = userNick.slice(0, userNick.length - 1) + '🎱⚔';
-                else userNick = userNick + " 🎱";
+                    if (currentEpisode.mode === "roleplay") userNick = userNick + " 🎱";
+                    else if (currentEpisode.mode === "combat") userNick = userNick + " ✊";
 
-                await EpisodeUtils.changeNickname(interaction, discordUser, userNick);
+                    await EpisodeUtils.changeNickname(interaction, discordUser, userNick);
+                }
                 temp.turn = true;
                 break;
             }
