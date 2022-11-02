@@ -5,4 +5,10 @@ const VortoxColor = {
     MISS: '#E34234'
 }
 
-module.exports = { VortoxColor };
+const VortoxReact = {
+    VOTE: ['👍','👎'],
+    ORB: '🟠',
+    SQUOAT: '🦀'
+}
+
+module.exports = { VortoxColor, VortoxReact };
