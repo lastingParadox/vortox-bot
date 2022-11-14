@@ -10,6 +10,7 @@ let episodeSchema = new Schema( {
     current: Boolean,
     players: [{
         user: { type: Schema.Types.ObjectId, ref: 'User' },
+        name: String,
         messageCount: Number,
         hasLeft: Boolean,
         turn: Boolean,

@@ -8,11 +8,12 @@ module.exports = {
 
         if (!command) return
 
-        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId)
-            .populate({ path: 'user', populate: { path: 'character'}});
+        let currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
 
         if (currentEpisode == null || interaction.channel.id !== currentEpisode.threadId)
             return;
+
+        currentEpisode = await currentEpisode.populate({ path: 'players.user', populate: { path: 'character'}});
 
         if (currentEpisode.mode === "roleplay") {
             if (command.data.name !== "8ball" && command.data.name !== "choose" && command.data.name !== "roll") {
@@ -51,10 +52,9 @@ module.exports = {
 
         for (let i = 1; i <= currentEpisode.players.length; i++) {
             let temp = currentEpisode.players[(currentEpisode.players.indexOf(player) + i) % currentEpisode.players.length]
-            console.log(temp);
             if (!temp.hasLeft) {
                 if (temp.user != null) {
-                    let discordUser = await interaction.guild.members.cache.get(temp.user.id);
+                    let discordUser = await interaction.guild.members.fetch(temp.user.id);
                     let userNick = discordUser.displayName;
 
                     if (currentEpisode.mode === "roleplay") userNick = userNick + " 🎱";

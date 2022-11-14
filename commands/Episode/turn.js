@@ -29,6 +29,8 @@ module.exports = {
             return;
         }
 
+        currentEpisode = await currentEpisode.populate({ path: 'players.user' });
+
         if (subcommand === 'show') {
 
             const userList = currentEpisode.players;
@@ -37,7 +39,7 @@ module.exports = {
             embed = new VortoxEmbed(VortoxColor.DEFAULT, "Episode Turn", `asked who has the turn currently.`, interaction.member);
 
             if (user.id === "DM") embed.setDescription(`It's the DM's turn!`);
-            else embed.setDescription(`It's <@${user.id}>'s turn!`);
+            else embed.setDescription(`It's <@${user.user.id}>'s turn!`);
         }
 
         else if (subcommand === 'skip') {
@@ -64,18 +66,18 @@ module.exports = {
 
             embed = new VortoxEmbed(VortoxColor.DEFAULT, "Skipping Turn", `skipped ${newUser.name}'s turn.`, interaction.member);
             if (newUser.id === "DM")
-                embed.setDescription(`Skipped <@${user.id}>'s turn.\nIt is now the DM's turn.`)
-            else embed.setDescription(`Skipped <@${user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
+                embed.setDescription(`Skipped <@${user.user.id}>'s turn.\nIt is now the DM's turn.`)
+            else embed.setDescription(`Skipped <@${user.user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
         }
         else if (subcommand === 'list') {
 
             let userString = "";
             for (let player of currentEpisode.players) {
-                if (player.id !== "DM") {
+                if (player.user.id !== "DM") {
                     if (player.turn === false)
-                        userString += `🟦 <@${player.id}>\n`;
+                        userString += `🟦 <@${player.user.id}>\n`;
                     else
-                        userString += `✅ <@${player.id}>\n`;
+                        userString += `✅ <@${player.user.id}>\n`;
                 } else {
                     if (player.turn === false)
                         userString += `🟦 DM\n`;

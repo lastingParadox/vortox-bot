@@ -17,7 +17,8 @@ const client = new Client({
 		Partials.User,
 		Partials.GuildMember,
 		Partials.Reaction
-	]
+	],
+	fetchAllMembers: true
 });
 
 client.commands = new Collection();

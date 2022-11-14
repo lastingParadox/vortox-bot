@@ -88,29 +88,22 @@ module.exports = {
         let damageType;
         const doTTypes = ['fire', 'poison', 'bleed'];
 
-        const hasDMRole = interaction.member.roles.cache.find(role => role.name === "DM");
+        const hasDMRole = await interaction.member.roles.cache.find(role => role.name === "DM") != null;
         const failCommandEmbed = new VortoxEmbed(VortoxColor.ERROR, "Error Using Damage Command", 'tried to damage someone.', interaction.member);
-        if (!hasDMRole && !(await EpisodeUtils.isCombat(interaction.guildId))) {
-            failCommandEmbed.setDescription("A combat sequence is not currently in progress and you do not have the `DM` role to use this command outside of combat!");
+
+        let currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
+        currentEpisode = await currentEpisode.populate({ path: 'players.user', populate: { path: 'character'}});
+
+        if (!hasDMRole && currentEpisode.mode !== "combat") {
+            failCommandEmbed.setDescription("The episode is not currently in combat mode and you do not have the `DM` role to use this command outside of combat!");
             return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
         }
 
-        let currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId)
+        let player = currentEpisode.players.filter(x => x.user.id === interaction.member.id)[0];
+        console.log(player, hasDMRole)
 
-        let player = currentEpisode.combat.players.filter(x => x.id === interaction.member.id);
-        for (let character of player) {
-            if (character.turn === true) {
-                player = character;
-                break;
-            }
-        }
-
-        if (!player && !hasDMRole) {
-            failCommandEmbed.setDescription("You are not currently in the combat sequence! Use `/combat join` to join in!");
-            return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
-        }
-        else if (player.turn === false && !hasDMRole) {
-            failCommandEmbed.setDescription("It is not your turn in the combat sequence!");
+        if (player.turn === false && !hasDMRole) {
+            failCommandEmbed.setDescription("It is not your turn!");
             return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
         }
 
@@ -122,7 +115,7 @@ module.exports = {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        let playerTarget = currentEpisode.combat.players.find(x => x.character.toString() === target._id.toString());
+        let playerTarget = currentEpisode.players.find(x => x.user.character.toString() === target._id.toString());
 
         if (damage === 'weapon') {
             const weaponId = interaction.options.getString("weapon_id");
@@ -202,13 +195,14 @@ module.exports = {
 
             totalDamage = roller.getTotal();
 
-            if (doTTypes.includes(damageType.toLowerCase()) && playerTarget) {
-                playerTarget.damageOverTime.status = statusString(damageType.toLowerCase());
-                playerTarget.damageOverTime.damageRoll = rollExpression;
-                playerTarget.damageOverTime.turnsLeft = 3;
-                await currentEpisode.save();
+            if (damageType != null) {
+                if (doTTypes.includes(damageType.toLowerCase()) && playerTarget) {
+                    playerTarget.damageOverTime.status = statusString(damageType.toLowerCase());
+                    playerTarget.damageOverTime.damageRoll = rollExpression;
+                    playerTarget.damageOverTime.turnsLeft = 3;
+                    await currentEpisode.save();
+                }
             }
-
         }
 
         if (target.game.incorporeal && damageType !== 'incorporeal' && totalDamage >= 0) {

@@ -5,7 +5,7 @@ let userSchema = new Schema( {
     _id: Schema.Types.ObjectId,
     id: { type: String, required: true },
 
-    user: { type: Schema.Types.ObjectId, ref: 'Character' },
+    character: { type: Schema.Types.ObjectId, ref: 'Character' },
 
     orbCount: Number,
     squoatCount: Number,
