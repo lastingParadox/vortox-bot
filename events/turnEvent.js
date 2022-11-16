@@ -1,4 +1,21 @@
 const { EpisodeUtils } = require("../utilities/episodeUtils");
+const Character = require("../models/characters")
+const { DiceRoller } = require("vortox-dice-parser");
+const {VortoxEmbed} = require("../utilities/embeds");
+const {VortoxColor} = require("../utilities/enums");
+
+function statusToDetails(status) {
+    switch (status) {
+        case "on fire":
+            return ["is Burning", "is on fire!"];
+        case "poisoned":
+            return ["is Poisoned", "is poisoned!"];
+        case "bleeding":
+            return ["is Bleeding", "is bleeding!"];
+        default:
+            return ["is an Error", "is nothing!"];
+    }
+}
 
 module.exports = {
     name: 'interactionCreate',
@@ -68,5 +85,37 @@ module.exports = {
         }
 
         await currentEpisode.save();
+
+        // Damage Over Time
+        if (currentEpisode.players.indexOf(player) === currentEpisode.players.length - 1) {
+            let list = await Character.find({ "meta.guildId": interaction.guildId });
+            for (let character of list) {
+                let status = character.game.damageOverTime;
+
+                if (status.turnsLeft === 0 || status.turnsLeft === "")
+                    continue;
+
+                let roller = new DiceRoller(status.damageRoll);
+                character.game.hp -= roller.getTotal();
+                status.turnsLeft--;
+
+                let damageStatusArray = statusToDetails(status.status);
+                let damageEmbed = new VortoxEmbed(VortoxColor.DEFAULT, `${character.name} ${damageStatusArray[0]}`, `caused the round to end.`, interaction.member);
+
+                let descriptionString = `${character.name} ${damageStatusArray[1]}\n` +
+                    `${character.name} took ${roller.getTotal()} damage!\n` +
+                    `${character.name} has \`${character.game.hp}\`/\`${character.game.maxHp}\` hp.`
+
+                damageEmbed.setDescription(descriptionString);
+                await interaction.channel.send({embeds: [damageEmbed]});
+
+                if (status.turnsLeft === 0) {
+                    status.status = "normal";
+                    status.damageRoll = "";
+                }
+
+                await character.save()
+            }
+        }
     },
 };

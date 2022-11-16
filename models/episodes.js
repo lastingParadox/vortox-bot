@@ -14,12 +14,6 @@ let episodeSchema = new Schema( {
         messageCount: Number,
         hasLeft: Boolean,
         turn: Boolean,
-
-        damageOverTime: {
-            status: String,
-            damageRoll: String,
-            turnsLeft: Number
-        },
     }],
 
     mode: String,

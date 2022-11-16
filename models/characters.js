@@ -22,7 +22,12 @@ let characterSchema = new Schema( {
             freeze: Number,
             shock: Number,
             biological: Number
-        }
+        },
+        damageOverTime: {
+            status: String,
+            damageRoll: String,
+            turnsLeft: Number
+        },
     },
 
     meta: {
