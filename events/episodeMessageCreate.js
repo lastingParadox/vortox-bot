@@ -18,6 +18,6 @@ module.exports = {
             }
         }
 
-        currentEpisode.save();
+        await currentEpisode.save();
     },
 };

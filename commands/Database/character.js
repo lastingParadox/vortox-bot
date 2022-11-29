@@ -234,7 +234,12 @@ module.exports = {
                         freeze: 0,
                         shock: 0,
                         biological: 0
-                    }
+                    },
+                    damageOverTime: {
+                        status: "normal",
+                        damageRoll: "",
+                        turnsLeft: 0,
+                    },
                 },
 
                 meta: {
