@@ -38,7 +38,7 @@ module.exports = {
 
             embed = new VortoxEmbed(VortoxColor.DEFAULT, "Episode Turn", `asked who has the turn currently.`, interaction.member);
 
-            if (user.id === "DM") embed.setDescription(`It's the DM's turn!`);
+            if (user.user === undefined) embed.setDescription(`It's the DM's turn!`);
             else embed.setDescription(`It's <@${user.user.id}>'s turn!`);
         }
 
@@ -64,29 +64,35 @@ module.exports = {
 
             await currentEpisode.save();
 
-            embed = new VortoxEmbed(VortoxColor.DEFAULT, "Skipping Turn", `skipped ${newUser.name}'s turn.`, interaction.member);
+            if (user.user === undefined)
+                embed = new VortoxEmbed(VortoxColor.DEFAULT, "Skipping Turn", `skipped the DM's turn.`, interaction.member);
+            else
+                embed = new VortoxEmbed(VortoxColor.DEFAULT, "Skipping Turn", `skipped ${user.name}'s turn.`, interaction.member);
             if (newUser.id === "DM")
                 embed.setDescription(`Skipped <@${user.user.id}>'s turn.\nIt is now the DM's turn.`)
-            else embed.setDescription(`Skipped <@${user.user.id}>'s turn.\nIt is now <@${newUser.id}>'s turn.`)
+            else embed.setDescription(`Skipped <@${user.user.id}>'s turn.\nIt is now <@${newUser.user.id}>'s turn.`)
         }
         else if (subcommand === 'list') {
 
             let userString = "";
             for (let player of currentEpisode.players) {
-                if (player.user.id !== "DM") {
-                    if (player.turn === false)
-                        userString += `🟦 <@${player.user.id}>\n`;
-                    else
-                        userString += `✅ <@${player.user.id}>\n`;
-                } else {
-                    if (player.turn === false)
-                        userString += `🟦 DM\n`;
-                    else
-                        userString += `✅ DM\n`;
+                if (player.hasLeft === false || player.hasLeft === undefined) {
+                    if (player.user === undefined) {
+                        if (player.turn === false)
+                            userString += `🟦 DM\n`;
+                        else
+                            userString += `✅ DM\n`;
+                    } else {
+                        if (player.turn === false)
+                            userString += `🟦 <@${player.user.id}>\n`;
+                        else
+                            userString += `✅ <@${player.user.id}>\n`;
+                    }
                 }
             }
 
-            embed = new VortoxEmbed(VortoxColor.DEFAULT, "Turn List", `got the turn list.`, interaction.member);
+            embed = new VortoxEmbed(VortoxColor.DEFAULT, "Turn List", `got the turn list.`,
+                interaction.member);
             embed.setDescription(userString);
         }
 

@@ -156,7 +156,7 @@ module.exports = {
             let user = await User.findOne({ id: interaction.member.id, guildId: interaction.guildId});
             if (user == null || user.character == null) {
                 let failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode`, interaction.member);
-                failEmbed.setDescription(`You do not have a main character set! Use \`character assign\` to set your character.`);
+                failEmbed.setDescription(`You do not have a main character set! Use \`character choose\` to set your character.`);
                 return interaction.reply({ embeds: [failEmbed], ephemeral: true });
             }
 
@@ -166,20 +166,23 @@ module.exports = {
                 reason: episodeName
             });
 
-            const users = [];
+            let users = [];
+            let listUsers = await User.find({ guildId: interaction.guildId });
 
             if (interaction.member.voice.channelId !== null) {
-                interaction.member.voice.channel.members.each(async member => {
-                    let user = await User.findOne({ id: member.id, guildId: interaction.guildId });
-                    if (user != null && user.character != null) {
-                        users.push({
-                            user: user,
-                            name: member.displayName,
-                            messageCount: 0,
-                            hasLeft: false,
-                            turn: false,
-                        });
-                        await newThread.members.add(member.id);
+                await interaction.member.voice.channel.members.each(async member => {
+                    if (!user.bot) {
+                        let user = listUsers.find(element => element.id === member.id);
+                        if (user != null && user.character != null) {
+                            users.push({
+                                user: user,
+                                name: member.displayName,
+                                messageCount: 0,
+                                hasLeft: false,
+                                turn: false,
+                            });
+                            await newThread.members.add(member.id);
+                        }
                     }
                 });
             }
@@ -202,11 +205,11 @@ module.exports = {
                 }
             }
 
+            users.sort(sortEpisodeUsers);
+
             let dmRole = await interaction.guild.roles.cache.find(role => role.name === "DM");
             if (dmRole !== undefined)
                 users.push(({ id: "DM", name: "DM", role: dmRole.id, turn: false }));
-
-            users.sort(sortEpisodeUsers);
 
             users[0].turn = true;
 
@@ -247,7 +250,8 @@ module.exports = {
         }
         else if (subcommand === "join") {
             const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
-            const player = currentEpisode.players.find(aPlayer => aPlayer.user.id === interaction.member.id);
+            console.log(currentEpisode.players);
+            const player = currentEpisode.players.find(aPlayer => aPlayer.user !== undefined && aPlayer.user.id === interaction.member.id);
 
             if (player !== undefined) {
                 if (player.user.hasLeft === false) {
@@ -268,7 +272,6 @@ module.exports = {
                         hasLeft: false,
                         turn: false,
                     });
-                    console.log(currentEpisode.players)
                 }
                 else {
                     let failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Joining Current Episode`, `tried to join the current episode`, interaction.member);
@@ -359,8 +362,18 @@ module.exports = {
             thread.send("Stopping episode!");
 
             let list = await Character.find({ "meta.guildId": interaction.guildId });
-            for (let character in list) {
+
+            for (let character of list) {
                 let status = character.game.damageOverTime;
+                if (status === undefined) {
+                    character.game.damageOverTime = {
+                        status: "normal",
+                        damageRoll: "",
+                        turnsLeft: 0
+                    }
+                    await character.save();
+                    continue;
+                }
 
                 if (status.turnsLeft === 0 || status.turnsLeft === "")
                     continue;

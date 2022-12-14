@@ -105,7 +105,7 @@ module.exports = {
             return interaction.reply({ embeds: [failCommandEmbed], ephemeral: true });
         }
 
-        let player = currentEpisode.players.filter(x => x.user.id === interaction.member.id)[0];
+        let player = currentEpisode.players.filter(x => x.user !== undefined && x.user.id === interaction.member.id)[0];
 
         if (!player && !hasDMRole) {
             failCommandEmbed.setDescription("You are not in the current episode! Use the command `episode join` to join!");
