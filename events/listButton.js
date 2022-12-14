@@ -2,7 +2,6 @@ const List = require("../models/lists");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const { VortoxEmbed } = require("../utilities/embeds");
 const { VortoxColor } = require("../utilities/enums");
-const mongoose = require("mongoose");
 
 function getRow(index, embeds) {
 	const row = new ActionRowBuilder()

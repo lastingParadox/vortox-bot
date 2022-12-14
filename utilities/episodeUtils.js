@@ -4,10 +4,6 @@ const { PermissionsBitField } = require("discord.js");
 
 class EpisodeUtils {
 
-    static async start() {
-        this.currentEpisode = await Episode.findOne({current: true});
-    }
-
     static async currentEpisode(guildId) {
         return Episode.findOne({current: true, guildId: guildId});
     }
@@ -15,11 +11,6 @@ class EpisodeUtils {
     static async isCurrentEpisode(guildId) {
         let currentEpisode = await this.currentEpisode(guildId);
         return currentEpisode != null;
-    }
-
-    static async isCombat(guildId) {
-        let currentEpisode = await this.currentEpisode(guildId);
-        return currentEpisode != null && currentEpisode.combat.players.length > 0
     }
 
     static async changeNickname(interaction, guildMember, nick) {

@@ -10,14 +10,16 @@ const client = new Client({
 		GatewayIntentBits.GuildMembers,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildMessageReactions,
-		GatewayIntentBits.MessageContent
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildVoiceStates
 	],
 	partials: [
 		Partials.Channel,
 		Partials.User,
 		Partials.GuildMember,
 		Partials.Reaction
-	]
+	],
+	fetchAllMembers: true
 });
 
 client.commands = new Collection();

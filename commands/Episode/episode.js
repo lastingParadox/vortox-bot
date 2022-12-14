@@ -2,9 +2,12 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { VortoxColor } = require('../../utilities/enums');
 const { EpisodeUtils } = require("../../utilities/episodeUtils");
 const Episode = require("../../models/episodes");
+const User = require("../../models/users");
 const { VortoxEmbed } = require("../../utilities/embeds");
 const { ThreadChannel } = require("discord.js");
 const mongoose = require("mongoose");
+const Character = require("../../models/characters");
+const {DiceRoller} = require("vortox-dice-parser");
 
 function msToTime(duration) {
     let milliseconds = Math.floor((duration % 1000) / 100),
@@ -31,6 +34,19 @@ function sortEpisodeUsers(a, b) {
     if (nameA < nameB) return -1;
     if (nameA > nameB) return 1;
     return 0;
+}
+
+function statusToDetails(status) {
+    switch (status) {
+        case "on fire":
+            return ["is Burning", "is on fire!"];
+        case "poisoned":
+            return ["is Poisoned", "is poisoned!"];
+        case "bleeding":
+            return ["is Bleeding", "is bleeding!"];
+        default:
+            return ["is an Error", "is nothing!"];
+    }
 }
 
 module.exports = {
@@ -96,27 +112,36 @@ module.exports = {
                             .setDescription('Edit the episode\'s description.')
                             .setRequired(false)
                     )
+        )
+        .addSubcommand(subcommand =>
+            subcommand.setName('mode')
+                .setDescription('Changes the episode\'s mode.')
         ),
 
     async execute(interaction) {
 
         const subcommand = interaction.options.getSubcommand();
-        const currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
+        let currentEpisode = await EpisodeUtils.currentEpisode(interaction.guildId);
 
         if ((subcommand === 'stop' || subcommand === 'join' || subcommand === 'leave' || subcommand === "pause" || subcommand === "unpause") && currentEpisode == null) {
             const failEmbed = new VortoxEmbed(VortoxColor.ERROR, "Unable to Access Episode!", `tried to access the current episode.`, interaction.member);
             failEmbed.setDescription(`There is no episode currently in progress!`);
             return interaction.reply({ embeds: [failEmbed], ephemeral: true });
         }
+        else if (subcommand !== "start") {
+            currentEpisode = await currentEpisode.populate({ path: 'players.user' });
+        }
 
         if (subcommand === "start") {
+
+            const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode.`, interaction.member);
+
             if (currentEpisode != null) {
                 const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
-                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode.`, interaction.member);
                 failEmbed.setDescription(`Cannot start an episode as ${thread.name} is ongoing!`);
                 return interaction.reply({embeds: [failEmbed], ephemeral: true});
-            } else if (interaction.channel instanceof ThreadChannel) {
-                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode.`, interaction.member);
+            }
+            else if (interaction.channel instanceof ThreadChannel) {
                 failEmbed.setDescription(`Cannot start an episode as this command was initiated in a thread channel!`);
                 return interaction.reply({ embeds: [failEmbed], ephemeral: true });
             }
@@ -128,35 +153,67 @@ module.exports = {
             if (sideEpisode) episodeName = interaction.guild.name + " Side Episode " + (numEpisodes + 1);
             else episodeName = interaction.guild.name + " Episode " + (numEpisodes + 1);
 
+            let user = await User.findOne({ id: interaction.member.id, guildId: interaction.guildId});
+            if (user == null || user.character == null) {
+                let failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode`, interaction.member);
+                failEmbed.setDescription(`You do not have a main character set! Use \`character choose\` to set your character.`);
+                return interaction.reply({ embeds: [failEmbed], ephemeral: true });
+            }
+
             const newThread = await interaction.channel.threads.create({
                 name: episodeName,
                 autoArchiveDuration: 60,
                 reason: episodeName
             });
 
-            const users = [];
+            let users = [];
+            let listUsers = await User.find({ guildId: interaction.guildId });
 
             if (interaction.member.voice.channelId !== null) {
-                interaction.member.voice.channel.members.each(async member => {
-                    let temp = { id: member.id, name: member.displayName, messageCount: 0, hasLeft: false, turn: false };
-                    users.push(temp);
-                    await newThread.members.add(member.id);
+                await interaction.member.voice.channel.members.each(async member => {
+                    if (!user.bot) {
+                        let user = listUsers.find(element => element.id === member.id);
+                        if (user != null && user.character != null) {
+                            users.push({
+                                user: user,
+                                name: member.displayName,
+                                messageCount: 0,
+                                hasLeft: false,
+                                turn: false,
+                            });
+                            await newThread.members.add(member.id);
+                        }
+                    }
                 });
             }
             else {
-                users.push({ id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, hasLeft: false, turn: false});
-                await newThread.members.add(interaction.member.id);
+                let user = await User.findOne({ id: interaction.member.id, guildId: interaction.guildId });
+                if (user != null && user.character != null) {
+                    users.push({
+                        user: user,
+                        name: interaction.member.displayName,
+                        messageCount: 0,
+                        hasLeft: false,
+                        turn: false,
+                    });
+                    await newThread.members.add(interaction.member.id);
+                }
+                else {
+                    let failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Starting New Episode`, `tried to start a new episode`, interaction.member);
+                    failEmbed.setDescription(`You do not have a main character set! Use \`character assign\` to set your character.`);
+                    return interaction.reply({ embeds: [failEmbed], ephemeral: true });
+                }
             }
+
+            users.sort(sortEpisodeUsers);
 
             let dmRole = await interaction.guild.roles.cache.find(role => role.name === "DM");
             if (dmRole !== undefined)
                 users.push(({ id: "DM", name: "DM", role: dmRole.id, turn: false }));
 
-            users.sort(sortEpisodeUsers);
-
             users[0].turn = true;
 
-            let firstUser = await interaction.guild.members.cache.get(users[0].id);
+            let firstUser = await interaction.guild.members.cache.get(users[0].user.id);
             let userNick = firstUser.displayName;
             userNick = userNick + ' 🎱';
             await EpisodeUtils.changeNickname(interaction, firstUser, userNick)
@@ -169,6 +226,7 @@ module.exports = {
                 threadId: newThread.id,
                 current: true,
                 players: users,
+                mode: "roleplay",
                 turnCount: 1,
                 messageCount: 0,
                 episodeLength: "",
@@ -192,20 +250,38 @@ module.exports = {
         }
         else if (subcommand === "join") {
             const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
+            console.log(currentEpisode.players);
+            const player = currentEpisode.players.find(aPlayer => aPlayer.user !== undefined && aPlayer.user.id === interaction.member.id);
 
-            if (thread.guildMembers.get(interaction.member.id) !== undefined) {
-                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Joining Current Episode`, `tried to join the current episode.`, interaction.member);
-                failEmbed.setDescription(`You're already in this episode!`);
-                return interaction.reply({ embeds: [failEmbed], ephemeral: true });
+            if (player !== undefined) {
+                if (player.user.hasLeft === false) {
+                    const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Joining Current Episode`, `tried to join the current episode.`, interaction.member);
+                    failEmbed.setDescription(`You're already in this episode!`);
+                    return interaction.reply({ embeds: [failEmbed], ephemeral: true });
+                } else {
+                    player.user.hasLeft = false;
+                }
             }
+            else {
+                let user = await User.findOne({ id: interaction.member.id, guildId: interaction.guildId });
+                if (user != null && user.character != null) {
+                    currentEpisode.players.push({
+                        user: user,
+                        name: interaction.member.displayName,
+                        messageCount: 0,
+                        hasLeft: false,
+                        turn: false,
+                    });
+                }
+                else {
+                    let failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Joining Current Episode`, `tried to join the current episode`, interaction.member);
+                    failEmbed.setDescription(`You do not have a main character set! Use \`character assign\` to set your character.`);
+                    return interaction.reply({ embeds: [failEmbed], ephemeral: true });
+                }
 
-            const player = currentEpisode.players.find(aPlayer => aPlayer.id === interaction.member.id);
-
-            if (player === undefined) {
-                currentEpisode.players.push({id: interaction.member.id, name: interaction.member.displayName, messageCount: 0, hasLeft: false, turn: false});
                 console.log(`Added ${interaction.member.id} to the current episode!`);
                 currentEpisode.players.sort(sortEpisodeUsers);
-            } else player.hasLeft = false;
+            }
 
             await thread.members.add(interaction.member.id);
 
@@ -219,7 +295,7 @@ module.exports = {
         else if (subcommand === "leave") {
             const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
 
-            const player = currentEpisode.players.find(aPlayer => aPlayer.id === interaction.member.id);
+            const player = currentEpisode.players.find(aPlayer => aPlayer.user.id === interaction.member.id);
 
             if (player !== undefined) {
                 player.hasLeft = true;
@@ -282,14 +358,50 @@ module.exports = {
             thread.send("Episode unpaused!");
         }
         else if (subcommand === "stop") {
-            if (await EpisodeUtils.isCombat(interaction.guildId)) {
-                const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Cannot Stop Current Episode`, `tried to stop the current episode.`, interaction.member);
-                failEmbed.setDescription(`You cannot stop the episode as a combat sequence is ongoing!`);
-                return interaction.reply({ embeds: [failEmbed], ephemeral: true });
-            }
-
             const thread = interaction.guild.channels.cache.get(currentEpisode.threadId);
             thread.send("Stopping episode!");
+
+            let list = await Character.find({ "meta.guildId": interaction.guildId });
+
+            for (let character of list) {
+                let status = character.game.damageOverTime;
+                if (status === undefined) {
+                    character.game.damageOverTime = {
+                        status: "normal",
+                        damageRoll: "",
+                        turnsLeft: 0
+                    }
+                    await character.save();
+                    continue;
+                }
+
+                if (status.turnsLeft === 0 || status.turnsLeft === "")
+                    continue;
+
+                let totalDamage = 0;
+
+                for (let i = status.turnsLeft; i > 0; i--) {
+                    let roller = new DiceRoller(status.damageRoll);
+                    character.game.hp -= roller.getTotal();
+                    totalDamage += roller.getTotal();
+                }
+
+                let damageStatusArray = statusToDetails(status.status);
+                let damageEmbed = new VortoxEmbed(VortoxColor.DEFAULT, `${character.name} ${damageStatusArray[0]}`, `stopped the episode.`, interaction.member);
+
+                let descriptionString = `${character.name} ${damageStatusArray[1]}\n` +
+                    `${character.name} took ${totalDamage} damage!\n` +
+                    `${character.name} has \`${character.game.hp}\`/\`${character.game.maxHp}\` hp.`
+
+                damageEmbed.setDescription(descriptionString);
+                await interaction.channel.send({embeds: [damageEmbed]});
+
+                status.turnsLeft = 0;
+                status.status = "normal";
+                status.damageRoll = "";
+
+                await character.save();
+            }
 
             currentEpisode.name = thread.name;
             if (currentEpisode.episodeLength !== "") currentEpisode.episodeLength = msToTime(Date.now() - parseInt(currentEpisode.episodeLength));
@@ -316,8 +428,7 @@ module.exports = {
                 console.log(`No document with id matching ${id} found in the ${interaction.guildId} database.`);
                 const embedFail = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${id}\``, `tried to edit episode ${id} in the guild database.`, interaction.member);
                 embedFail.setDescription(`Episode \`${id}\` does not exist in this guild!`);
-                interaction.reply({ embeds: [embedFail], ephemeral: true });
-                return;
+                return interaction.reply({ embeds: [embedFail], ephemeral: true });
             }
 
             if (newId !== null) {
@@ -327,8 +438,7 @@ module.exports = {
                     console.log(`Id matching ${newId} found in the ${interaction.guildId} database, not editing document ${id}.`);
                     const failEmbed = new VortoxEmbed(VortoxColor.ERROR, `Error Editing \`${episode.name}\``, `tried to edit ${episode.name} in the guild database.`, interaction.member);
                     failEmbed.setDescription(`Episode id \`${newId}\` already exists!`);
-                    await interaction.reply({ embeds: [failEmbed], ephemeral: true });
-                    return;
+                    return interaction.reply({ embeds: [failEmbed], ephemeral: true });
                 }
                 else episode.id = newId;
             }
@@ -371,6 +481,19 @@ module.exports = {
 
             await interaction.reply({ embeds: [embed] });
 
+        }
+
+        else if (subcommand === "mode") {
+
+            if (currentEpisode.mode === "roleplay") currentEpisode.mode = "combat";
+            else if (currentEpisode.mode === "combat") currentEpisode.mode = "roleplay";
+
+            await currentEpisode.save();
+
+            let embed = new VortoxEmbed(VortoxColor.DEFAULT, `Episode Mode Changed`, `changed the episode mode`, interaction.member);
+            embed.setDescription(`The episode mode is now \`${currentEpisode.mode}\`.`);
+
+            await interaction.reply({ embeds: [embed] });
         }
     }
 }

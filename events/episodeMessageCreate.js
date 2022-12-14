@@ -2,7 +2,7 @@ const { EpisodeUtils } = require("../utilities/episodeUtils");
 module.exports = {
     name: 'messageCreate',
     async execute(message) {
-        let currentEpisode = EpisodeUtils.currentEpisode(message.guildId);
+        let currentEpisode = await EpisodeUtils.currentEpisode(message.guildId);
 
         if (currentEpisode == null || message.channel.id !== currentEpisode.threadId || message.author.bot)
             return;
@@ -18,6 +18,6 @@ module.exports = {
             }
         }
 
-        currentEpisode.save();
+        await currentEpisode.save();
     },
 };
