@@ -1,0 +1,27 @@
+version: '3.8'
+
+volumes:
+  db:
+  bot:
+
+services:
+  mysqldb:
+    image: mysql:8.0
+    ports:
+      - "5001:3306"
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: docker
+      MYSQL_DATABASE: vortox
+      MYSQL_USER: vortox
+      MYSQL_PASSWORD: password
+  bot:
+    build: .
+    command: node index.js
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./bot:/usr/src/bot
+    depends_on:
+      - mysqldb

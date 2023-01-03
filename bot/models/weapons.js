@@ -7,14 +7,7 @@ let weaponSchema = new Schema( {
     name: String,
     description: String,
 
-    damageTypes: [String],
-    ailments: [
-        {
-            id: String,
-            accuracy: Number,
-            damage_percentile: Number,
-        }
-    ],
+    damageType: String,
     damage: String,
     missRate: Number,
     timesUsed: Number,

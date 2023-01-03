@@ -1,18 +1,11 @@
 {
-  "name": "vortoxbot2",
-  "version": "1.0.0",
-  "description": "VortoxBot 2.0",
+  "name": "vortoxbot",
+  "version": "3.0.0",
+  "description": "VortoxBot 3.0",
   "main": "index.js",
   "engines": {
-    "node": "18.7.0",
+    "node": "19.3.0",
     "npm": "*"
-  },
-  "dependencies": {
-    "@discordjs/builders": "^1.1.0",
-    "discord.js": "^14.2.0",
-    "dotenv": "^16.0.1",
-    "mongoose": "^6.5.2",
-    "vortox-dice-parser": "^1.1.4"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -27,5 +20,16 @@
   "bugs": {
     "url": "https://github.com/lastingParadox/vortox-bot/issues"
   },
-  "homepage": "https://github.com/lastingParadox/vortox-bot#readme"
+  "homepage": "https://github.com/lastingParadox/vortox-bot#readme",
+  "keywords": [
+    "vortox",
+    "bot"
+  ],
+  "dependencies": {
+    "@discordjs/builders": "^1.4.0",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "mongoose": "^6.8.2",
+    "vortox-dice-parser": "^1.1.4"
+  }
 }

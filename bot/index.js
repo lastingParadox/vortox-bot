@@ -37,8 +37,15 @@ const commandFolders = fs.readdirSync("./commands");
 	client.handleCommands(commandFolders, "./commands");
 
 	//Logging in the bot to the mongoDB service
+	mongoose.set('strictQuery', false);
 	await mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 	//Logging in the bot to the Discord service
 	await client.login(process.env.CLIENT_TOKEN);
+
+	process.on('SIGTERM', (signal) => {
+		console.log(`Received ${signal}, stopping the bot.`);
+		mongoose.connection.close();
+		process.exit();
+	})
 
 })();
