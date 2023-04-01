@@ -333,7 +333,8 @@ module.exports = {
             if (target.locations.length > 0) {
                 let locationString = "";
                 for (let location of target.locations) {
-                    locationString += "`" + location.name + "`\n";
+                    let locationObj = await Location.findById(location);
+                    locationString += "`" + locationObj.name + "`\n";
                 }
                 fields.push({ name: "Locations", value: `${locationString}`, inline: false });
             }

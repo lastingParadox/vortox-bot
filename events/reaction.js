@@ -16,7 +16,7 @@ module.exports = {
         else if (message.author.bot) {
             if (message.embeds.length > 0) {
                 const embed = message.embeds[0];
-                if (embed.description.toLowerCase().includes("vote")) {
+                if (embed.description?.toLowerCase().includes("vote")) {
                     for (let i of VortoxReact.VOTE)
                         await message.react(i);
                 }
